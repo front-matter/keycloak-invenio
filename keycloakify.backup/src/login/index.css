@@ -1,0 +1,31 @@
+@import url(./assets/fonts/geist/index.css);
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body.kcBodyClass {
+    @apply bg-[url(./assets/img/background.jpg)] bg-no-repeat bg-center bg-fixed;
+    @apply font-geist;
+}
+
+.kcHeaderWrapperClass {
+    background-image: url(/logo/invenio-rdm-white.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 80px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#kc-header-wrapper {
+    @apply invisible;
+}
+
+/* ORCID icon styling */
+.orcid-icon {
+    @apply inline-block w-5 h-5 bg-contain bg-no-repeat bg-center align-middle;
+    background-image: url(/logo/orcid-icon.svg);
+}
