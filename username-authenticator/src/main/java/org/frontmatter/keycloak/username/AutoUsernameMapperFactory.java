@@ -13,8 +13,9 @@ public class AutoUsernameMapperFactory extends AbstractIdentityProviderMapper {
 
   @Override
   public String[] getCompatibleProviders() {
-    // Works with all identity providers
-    return null;
+    // Works with all identity providers - return empty array to indicate
+    // compatibility with all
+    return new String[0];
   }
 
   @Override
