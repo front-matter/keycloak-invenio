@@ -30,7 +30,7 @@ COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/
 COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator.jar /opt/keycloak/providers/
 
 # Copy Keycloakify theme JAR
-COPY dist_keycloak/keycloak-theme-front-matter.jar /opt/keycloak/providers/
+COPY dist_keycloak/keycloak-theme-invenio.jar /opt/keycloak/providers/
 
 # Verify all providers are in place
 RUN ls -la /opt/keycloak/providers/ && \
@@ -47,6 +47,6 @@ RUN echo "============================================" && \
   test -f /opt/keycloak/providers/keycloak-orcid.jar && echo "✓ ORCID Identity Provider" || (echo "✗ ORCID provider missing" && exit 1) && \
   test -f /opt/keycloak/providers/keycloak-2fa-email-authenticator.jar && echo "✓ Email OTP Authenticator" || (echo "✗ Email OTP missing" && exit 1) && \
   test -f /opt/keycloak/providers/auto-username.jar && echo "✓ Auto Username Mapper" || (echo "✗ Auto-username missing" && exit 1) && \
-  test -f /opt/keycloak/providers/keycloak-theme-front-matter.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
+  test -f /opt/keycloak/providers/keycloak-theme-invenio.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
   echo "============================================" && \
   echo "All extensions installed successfully!"
