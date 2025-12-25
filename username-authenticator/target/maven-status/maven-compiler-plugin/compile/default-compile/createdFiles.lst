@@ -1,0 +1,3 @@
+org/frontmatter/keycloak/username/AutoUsernameAuthenticator.class
+org/frontmatter/keycloak/username/UsernameGenerator.class
+org/frontmatter/keycloak/username/AutoUsernameAuthenticatorFactory.class
