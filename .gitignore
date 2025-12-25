@@ -1,0 +1,13 @@
+# Node modules
+keycloakify/node_modules
+
+# Build artifacts
+keycloakify/dist
+keycloakify/dist_keycloak
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
