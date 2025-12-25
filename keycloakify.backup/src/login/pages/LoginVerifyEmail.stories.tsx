@@ -32,6 +32,7 @@ export const Default: Story = {
  * WithSuccessMessage:
  * - Purpose: Tests when the email verification is successful, and the user receives a confirmation message.
  * - Scenario: The component renders a success message instead of a warning or error.
+ * - Key Aspect: Ensures the success message is displayed correctly when the email is successfully verified.
  */
 export const WithSuccessMessage: Story = {
     render: () => (
