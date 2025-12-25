@@ -1,3 +1,5 @@
 /Users/mfenner/Documents/keycloak-invenio/username-authenticator/src/main/java/org/frontmatter/keycloak/username/AutoUsernameAuthenticatorFactory.java
 /Users/mfenner/Documents/keycloak-invenio/username-authenticator/src/main/java/org/frontmatter/keycloak/username/AutoUsernameAuthenticator.java
+/Users/mfenner/Documents/keycloak-invenio/username-authenticator/src/main/java/org/frontmatter/keycloak/username/AutoUsernameMapperFactory.java
 /Users/mfenner/Documents/keycloak-invenio/username-authenticator/src/main/java/org/frontmatter/keycloak/username/UsernameGenerator.java
+/Users/mfenner/Documents/keycloak-invenio/username-authenticator/src/main/java/org/frontmatter/keycloak/username/AutoUsernameMapper.java

@@ -58,14 +58,20 @@ The authenticator is automatically built and included when building the main Doc
 
 ## Configuration in Keycloak Admin Console
 
-1. Go to **Authentication** → **Flows**
-2. Create a new flow or edit an existing one (e.g., "First Broker Login")
-3. Click **Add execution**
-4. Select **Auto Username Generator** from the list
-5. Set the requirement to **REQUIRED**
-6. Save the flow
+### Option 1: Identity Provider Mapper (Recommended)
 
-### Typical Use Case: ORCID/Social Login
+This is the recommended approach as it assigns usernames during user import, not after.
+
+1. Go to **Identity Providers** → Select your provider (e.g., **ORCID**)
+2. Click on the **Mappers** tab
+3. Click **Add mapper**
+4. Select **Auto Username Generator** from the mapper type dropdown
+5. Give it a name (e.g., "Auto Username")
+6. Save
+
+Now when users log in via ORCID for the first time, they'll automatically get a unique username assigned during the import process.
+
+### Option 2: Authentication Flow (Alternative)
 
 For users logging in via ORCID or other identity providers:
 
