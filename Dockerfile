@@ -33,7 +33,7 @@ COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-
 WORKDIR /keycloakify
 RUN pnpm run build-keycloak-theme
 WORKDIR /
-COPY keycloakify/dist_keycloak/keycloakify/dist_keycloak/keycloak-theme-for-kc-22-to-25.jar /opt/keycloak/providers/
+COPY keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
 
 # Verify all providers are in place
 RUN ls -la /opt/keycloak/providers/ && \

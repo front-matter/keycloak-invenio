@@ -8,7 +8,6 @@ export default defineConfig({
         react(),
         keycloakify({
             themeName: "invenio",
-            keycloakVersionTargets: ["26.jar"],
             accountThemeImplementation: "Single-Page"
         })
     ]
