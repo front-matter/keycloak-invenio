@@ -1,16 +1,12 @@
 {
-    "name": "keycloakify-starter",
-    "version": "0.0.1",
-    "description": "Starter for Keycloakify 11",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/front-matter/keycloakify-starter.git"
-    },
+    "name": "keycloakify-invenio",
+    "version": "0.1.0",
+    "description": "keycloakify theme for Invenio",
     "type": "module",
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
-        "build-keycloak-theme": "npm run build && keycloakify build  && mv ./dist_keycloak/*.jar ../dist_keycloak/",
+        "build-keycloak-theme": "npm run build && keycloakify build",
         "storybook": "storybook dev -p 6006",
         "format": "prettier . --write"
     },

@@ -29,8 +29,11 @@ COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/
 # Copy Email OTP authenticator
 COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator.jar /opt/keycloak/providers/
 
-# Copy Keycloakify theme JAR
-COPY dist_keycloak/keycloak-theme-invenio.jar /opt/keycloak/providers/
+# Build Keycloakify theme and copy theme JAR
+WORKDIR /keycloakify
+RUN pnpm run build-keycloak-theme
+WORKDIR /
+COPY keycloakify/dist_keycloak/keycloakify/dist_keycloak/keycloak-theme-for-kc-22-to-25.jar /opt/keycloak/providers/
 
 # Verify all providers are in place
 RUN ls -la /opt/keycloak/providers/ && \
