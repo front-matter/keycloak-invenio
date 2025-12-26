@@ -1,5 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { createKcPageStory } from "../KcPageStory";
+import { socialProviderIconMap } from "../socialProviderIconMap";
+
+const createProvider = (alias: keyof typeof socialProviderIconMap) => ({
+    loginUrl: alias,
+    alias,
+    providerId: alias,
+    displayName: alias === "orcid" ? "ORCID" : alias === "github" ? "GitHub" : alias.charAt(0).toUpperCase() + alias.slice(1),
+    icon: socialProviderIconMap[alias]
+});
 
 const { KcPageStory } = createKcPageStory({ pageId: "login.ftl" });
 
@@ -61,27 +70,6 @@ export const WithoutRememberMe: Story = {
         />
     )
 };
-
-export const WithoutPasswordReset: Story = {
-    render: () => (
-        <KcPageStory
-            kcContext={{
-                realm: { resetPasswordAllowed: false }
-            }}
-        />
-    )
-};
-
-export const WithEmailAsUsername: Story = {
-    render: () => (
-        <KcPageStory
-            kcContext={{
-                realm: { loginWithEmailAllowed: false }
-            }}
-        />
-    )
-};
-
 export const WithPresetUsername: Story = {
     render: () => (
         <KcPageStory
@@ -117,90 +105,22 @@ export const WithSocialProviders: Story = {
                 social: {
                     displayInfo: true,
                     providers: [
-                        {
-                            loginUrl: "google",
-                            alias: "google",
-                            providerId: "google",
-                            displayName: "Google",
-                            iconClasses: "fa fa-google"
-                        },
-                        {
-                            loginUrl: "microsoft",
-                            alias: "microsoft",
-                            providerId: "microsoft",
-                            displayName: "Microsoft",
-                            iconClasses: "fa fa-windows"
-                        },
-                        {
-                            loginUrl: "facebook",
-                            alias: "facebook",
-                            providerId: "facebook",
-                            displayName: "Facebook",
-                            iconClasses: "fa fa-facebook"
-                        },
-                        {
-                            loginUrl: "instagram",
-                            alias: "instagram",
-                            providerId: "instagram",
-                            displayName: "Instagram",
-                            iconClasses: "fa fa-instagram"
-                        },
-                        {
-                            loginUrl: "twitter",
-                            alias: "twitter",
-                            providerId: "twitter",
-                            displayName: "Twitter",
-                            iconClasses: "fa fa-twitter"
-                        },
-                        {
-                            loginUrl: "linkedin",
-                            alias: "linkedin",
-                            providerId: "linkedin",
-                            displayName: "LinkedIn",
-                            iconClasses: "fa fa-linkedin"
-                        },
-                        {
-                            loginUrl: "stackoverflow",
-                            alias: "stackoverflow",
-                            providerId: "stackoverflow",
-                            displayName: "Stackoverflow",
-                            iconClasses: "fa fa-stack-overflow"
-                        },
-                        {
-                            loginUrl: "github",
-                            alias: "github",
-                            providerId: "github",
-                            displayName: "Github",
-                            iconClasses: "fa fa-github"
-                        },
-                        {
-                            loginUrl: "gitlab",
-                            alias: "gitlab",
-                            providerId: "gitlab",
-                            displayName: "Gitlab",
-                            iconClasses: "fa fa-gitlab"
-                        },
-                        {
-                            loginUrl: "bitbucket",
-                            alias: "bitbucket",
-                            providerId: "bitbucket",
-                            displayName: "Bitbucket",
-                            iconClasses: "fa fa-bitbucket"
-                        },
-                        {
-                            loginUrl: "paypal",
-                            alias: "paypal",
-                            providerId: "paypal",
-                            displayName: "PayPal",
-                            iconClasses: "fa fa-paypal"
-                        },
-                        {
-                            loginUrl: "openshift",
-                            alias: "openshift",
-                            providerId: "openshift",
-                            displayName: "OpenShift",
-                            iconClasses: "fa fa-cloud"
-                        }
+                        ...(
+                            [
+                                "google",
+                                "microsoft",
+                                "meta",
+                                "instagram",
+                                "x",
+                                "linkedin",
+                                "stackoverflow",
+                                "github",
+                                "gitlab",
+                                "bitbucket",
+                                "paypal",
+                                "orcid"
+                            ] as (keyof typeof socialProviderIconMap)[]
+                        ).map(createProvider)
                     ]
                 }
             }}
@@ -238,15 +158,20 @@ export const WithOneSocialProvider: Story = {
             kcContext={{
                 social: {
                     displayInfo: true,
-                    providers: [
-                        {
-                            loginUrl: "google",
-                            alias: "google",
-                            providerId: "google",
-                            displayName: "Google",
-                            iconClasses: "fa fa-google"
-                        }
-                    ]
+                    providers: [createProvider("orcid")]
+                }
+            }}
+        />
+    )
+};
+export const WithoutPasswordFieldWithOneSocialProvider: Story = {
+    render: () => (
+        <KcPageStory
+            kcContext={{
+                realm: { password: false },
+                social: {
+                    displayInfo: true,
+                    providers: [createProvider("orcid")]
                 }
             }}
         />
@@ -260,22 +185,7 @@ export const WithTwoSocialProviders: Story = {
             kcContext={{
                 social: {
                     displayInfo: true,
-                    providers: [
-                        {
-                            loginUrl: "google",
-                            alias: "google",
-                            providerId: "google",
-                            displayName: "Google",
-                            iconClasses: "fa fa-google"
-                        },
-                        {
-                            loginUrl: "microsoft",
-                            alias: "microsoft",
-                            providerId: "microsoft",
-                            displayName: "Microsoft",
-                            iconClasses: "fa fa-windows"
-                        }
-                    ]
+                    providers: [createProvider("google"), createProvider("microsoft")]
                 }
             }}
         />
@@ -301,36 +211,7 @@ export const WithMoreThanTwoSocialProviders: Story = {
             kcContext={{
                 social: {
                     displayInfo: true,
-                    providers: [
-                        {
-                            loginUrl: "google",
-                            alias: "google",
-                            providerId: "google",
-                            displayName: "Google",
-                            iconClasses: "fa fa-google"
-                        },
-                        {
-                            loginUrl: "microsoft",
-                            alias: "microsoft",
-                            providerId: "microsoft",
-                            displayName: "Microsoft",
-                            iconClasses: "fa fa-windows"
-                        },
-                        {
-                            loginUrl: "facebook",
-                            alias: "facebook",
-                            providerId: "facebook",
-                            displayName: "Facebook",
-                            iconClasses: "fa fa-facebook"
-                        },
-                        {
-                            loginUrl: "twitter",
-                            alias: "twitter",
-                            providerId: "twitter",
-                            displayName: "Twitter",
-                            iconClasses: "fa fa-twitter"
-                        }
-                    ]
+                    providers: [createProvider("google"), createProvider("microsoft"), createProvider("meta"), createProvider("x")]
                 }
             }}
         />
@@ -343,15 +224,7 @@ export const WithSocialProvidersAndWithoutRememberMe: Story = {
             kcContext={{
                 social: {
                     displayInfo: true,
-                    providers: [
-                        {
-                            loginUrl: "google",
-                            alias: "google",
-                            providerId: "google",
-                            displayName: "Google",
-                            iconClasses: "fa fa-google"
-                        }
-                    ]
+                    providers: [createProvider("google")]
                 },
                 realm: { rememberMe: false }
             }}
