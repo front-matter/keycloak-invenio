@@ -11,6 +11,5 @@ export default {
                 geist: ["Geist", "sans-serif"]
             }
         }
-    },
-    plugins: []
+    }
 };
