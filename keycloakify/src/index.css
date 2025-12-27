@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Global background: Tailwind slate-500 (#64748b), no image */
+body {
+	@apply bg-slate-500;
+	background-image: none;
+}
