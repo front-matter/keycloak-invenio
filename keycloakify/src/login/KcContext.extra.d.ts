@@ -18,3 +18,15 @@ declare module "./KcContext" {
         providers: SocialProvider[];
     }
 }
+
+// Extend realm to include custom attributes
+declare module "keycloakify/login" {
+    interface KcContextBase {
+        realm: KcContextBase["realm"] & {
+            attributes?: {
+                logoName?: string;
+                [key: string]: string | undefined;
+            };
+        };
+    }
+}

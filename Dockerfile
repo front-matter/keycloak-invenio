@@ -32,6 +32,9 @@ COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-
 # Copy Keycloakify theme JAR
 COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
 
+# Copy realm configuration
+COPY realm-config.json /opt/keycloak/data/import/realm-config.json
+
 # Verify all providers are in place
 RUN ls -la /opt/keycloak/providers/ && \
   echo "Verifying extensions..." && \

@@ -1,0 +1,43 @@
+{
+  "realm": "invenio",
+  "enabled": true,
+  "displayName": "Invenio",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>Invenio</span></div>",
+  "loginWithEmailAllowed": true,
+  "registrationAllowed": true,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginTheme": "invenio",
+  "accountTheme": "invenio",
+  "adminTheme": "keycloak",
+  "emailTheme": "keycloak",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "de"],
+  "defaultLocale": "en",
+  "attributes": {
+    "logoName": "${env.KC_LOGO_NAME:logo-invenio-white.svg}"
+  },
+  "identityProviders": [
+    {
+      "alias": "orcid",
+      "providerId": "orcid",
+      "enabled": true,
+      "displayName": "ORCID",
+      "config": {
+        "clientId": "${env.ORCID_CLIENT_ID}",
+        "clientSecret": "${env.ORCID_CLIENT_SECRET}"
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "invenio-app",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": ["${env.INVENIO_URL:http://localhost:3000}/*"],
+      "webOrigins": ["${env.INVENIO_URL:http://localhost:3000}"],
+      "protocol": "openid-connect"
+    }
+  ]
+}

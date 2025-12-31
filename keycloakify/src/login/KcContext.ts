@@ -5,6 +5,13 @@ import type { KcEnvName, ThemeName } from "../kc.gen";
 export type KcContextExtension = {
     themeName: ThemeName;
     properties: Record<KcEnvName, string> & {};
+    // Extend realm to support custom attributes
+    realm: {
+        attributes?: {
+            logoName?: string;
+            [key: string]: string | undefined;
+        };
+    };
 };
 
 export type KcContextExtensionPerPage = {};

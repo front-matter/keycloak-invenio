@@ -9,6 +9,11 @@ const kcContextExtension: KcContextExtension = {
     themeName: themeNames[0],
     properties: {
         ...kcEnvDefaults
+    },
+    realm: {
+        attributes: {
+            logoName: "logo-invenio-white.svg"
+        }
     }
 };
 const kcContextExtensionPerPage: KcContextExtensionPerPage = {};
