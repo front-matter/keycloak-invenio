@@ -16,7 +16,7 @@
   "supportedLocales": ["en", "de"],
   "defaultLocale": "en",
   "attributes": {
-    "logoName": "${env.KC_LOGO_NAME:logo-invenio-white.svg}"
+    "logoName": "${env.KC_LOGO_NAME:logo-front-matter.svg}"
   },
   "identityProviders": [
     {
