@@ -1,3 +1,7 @@
 body.kcBodyClass {
   background-color: #64748b;
 }
+
+.login-pf body {
+  background: none !important;
+}
