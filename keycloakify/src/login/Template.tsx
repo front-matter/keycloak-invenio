@@ -1,4 +1,3 @@
-import logoPngUrl from "./assets/logo-invenio-white.svg";
 import { useEffect } from "react";
 import { clsx } from "keycloakify/tools/clsx";
 import { kcSanitize } from "keycloakify/lib/kcSanitize";
@@ -57,7 +56,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
             <div id="kc-header" className={kcClsx("kcHeaderClass")}>
                 <div id="kc-header-wrapper" className={kcClsx("kcHeaderWrapperClass")}>
                     {/*{msg("loginTitleHtml", realm.displayNameHtml)}*/}
-                    <img src={logoPngUrl} width={400} alt="Logo" />
+                    <img src={`${import.meta.env.BASE_URL}logo-invenio-white.svg`} width={400} />
                 </div>
             </div>
             <div className={kcClsx("kcFormCardClass")}>
