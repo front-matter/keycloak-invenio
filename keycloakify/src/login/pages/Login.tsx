@@ -7,6 +7,7 @@ import type { PageProps } from "keycloakify/login/pages/PageProps";
 import { getKcClsx, type KcClsx } from "keycloakify/login/lib/kcClsx";
 import type { KcContext } from "../KcContext";
 import type { I18n } from "../i18n";
+import { socialProviderIconMap } from "../socialProviderIconMap";
 
 export default function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" }>, I18n>) {
     const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
@@ -60,29 +61,41 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                             <hr />
                             <h2>{msg("identity-provider-login-label")}</h2>
                             <ul className={kcClsx("kcFormSocialAccountListClass", social.providers.length > 3 && "kcFormSocialAccountListGridClass")}>
-                                {(social.providers as SocialProvider[]).map((...[p, , providers]) => (
-                                    <li key={p.alias}>
-                                        <a
-                                            id={`social-${p.alias}`}
-                                            className={kcClsx(
-                                                "kcFormSocialAccountListButtonClass",
-                                                providers.length > 3 && "kcFormSocialAccountGridItem"
-                                            )}
-                                            type="button"
-                                            href={p.loginUrl}
-                                        >
-                                            {p.icon ? (
-                                                <FontAwesomeIcon icon={p.icon} className={clsx("kcCommonLogoIdP")} aria-hidden="true" />
-                                            ) : (
-                                                p.iconClasses && <i className={clsx("kcCommonLogoIdP", p.iconClasses)} aria-hidden="true"></i>
-                                            )}
-                                            <span
-                                                className={clsx(kcClsx("kcFormSocialAccountNameClass"), p.iconClasses && "kc-social-icon-text")}
-                                                dangerouslySetInnerHTML={{ __html: kcSanitize(p.displayName) }}
-                                            ></span>
-                                        </a>
-                                    </li>
-                                ))}
+                                {(social.providers as SocialProvider[]).map((...[p, , providers]) => {
+                                    // Assign icon from socialProviderIconMap based on provider alias
+                                    const providerWithIcon = {
+                                        ...p,
+                                        icon: socialProviderIconMap[p.alias as keyof typeof socialProviderIconMap] || p.icon
+                                    };
+
+                                    return (
+                                        <li key={p.alias}>
+                                            <a
+                                                id={`social-${p.alias}`}
+                                                className={kcClsx(
+                                                    "kcFormSocialAccountListButtonClass",
+                                                    providers.length > 3 && "kcFormSocialAccountGridItem"
+                                                )}
+                                                type="button"
+                                                href={p.loginUrl}
+                                            >
+                                                {providerWithIcon.icon ? (
+                                                    <FontAwesomeIcon
+                                                        icon={providerWithIcon.icon}
+                                                        className={clsx("kcCommonLogoIdP")}
+                                                        aria-hidden="true"
+                                                    />
+                                                ) : (
+                                                    p.iconClasses && <i className={clsx("kcCommonLogoIdP", p.iconClasses)} aria-hidden="true"></i>
+                                                )}
+                                                <span
+                                                    className={clsx(kcClsx("kcFormSocialAccountNameClass"), p.iconClasses && "kc-social-icon-text")}
+                                                    dangerouslySetInnerHTML={{ __html: kcSanitize(p.displayName) }}
+                                                ></span>
+                                            </a>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     )}
