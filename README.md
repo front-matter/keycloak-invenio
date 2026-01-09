@@ -151,6 +151,16 @@ Fallback OTP handling: force
 - Test the connection with the **Test connection** button
 - Temporarily enable **Simulation mode** and check Keycloak logs
 
+#### Enable Required Action
+
+The Email OTP authenticator sets a Required Action (`email-authenticator-setup`) for users who haven't been configured yet.
+
+If this Required Action is disabled, login may fail with **"Credential setup required"**.
+
+**Authentication → Required actions:**
+1. Find **"Set up Email Authenticator"**
+2. Set **Enabled** = **ON**
+
 #### Code Invalid or Expired
 
 - Check the **Time-to-live** setting
