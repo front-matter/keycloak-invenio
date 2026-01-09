@@ -40,6 +40,67 @@
       "priority": 100
     }
   ],
+  "authenticationFlows": [
+    {
+      "alias": "browser",
+      "description": "browser based authentication",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "requirement": "ALTERNATIVE",
+          "priority": 25,
+          "userSetupAllowed": false
+        },
+        {
+          "flowAlias": "browser-forms",
+          "requirement": "ALTERNATIVE",
+          "priority": 30,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "browser-forms",
+      "description": "Username, password, otp and other auth forms.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "email-conditional-authenticator",
+          "requirement": "CONDITIONAL",
+          "priority": 20,
+          "userSetupAllowed": true,
+          "authenticatorConfig": {
+            "alias": "email-otp-config",
+            "config": {
+              "defaultOutcome": "skip",
+              "forceOtpRole": "",
+              "skipOtpRole": "",
+              "forceOtpForHttpHeader": "",
+              "noOtpRequiredForHttpHeader": ""
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "browserFlow": "browser",
   "clientScopes": [
     {
       "name": "profile",
