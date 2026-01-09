@@ -30,6 +30,34 @@
       }
     }
   ],
+  "clientScopes": [
+    {
+      "name": "profile",
+      "description": "OpenID Connect built-in scope: profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${profileScopeConsentText}"
+      },
+      "protocolMappers": [
+        {
+          "name": "orcid",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "orcid",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "orcid",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
   "clients": [
     {
       "clientId": "invenio-app",
