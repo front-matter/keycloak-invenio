@@ -27,7 +27,7 @@ ADD --chmod=644 https://github.com/eosc-kc/keycloak-orcid/releases/download/1.4.
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
 
 # Copy Email OTP authenticator
-COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator-v26.0.0-SNAPSHOT.jar /opt/keycloak/providers/
+COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator-v26.1.0.jar /opt/keycloak/providers/
 
 # Copy Keycloakify theme JAR
 COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
