@@ -23,7 +23,7 @@ RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.gi
   fi
 
 # Final stage
-FROM quay.io/keycloak/keycloak:26.4
+FROM quay.io/keycloak/keycloak:26.5
 
 # Install keycloak-orcid extension
 ADD --chmod=644 https://github.com/eosc-kc/keycloak-orcid/releases/download/1.4.0/keycloak-orcid.jar /opt/keycloak/providers/keycloak-orcid.jar

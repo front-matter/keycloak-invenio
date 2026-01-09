@@ -30,6 +30,16 @@
       }
     }
   ],
+  "requiredActions": [
+    {
+      "alias": "email-authenticator-setup",
+      "name": "Set up Email Authenticator",
+      "providerId": "email-authenticator-setup",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 100
+    }
+  ],
   "clientScopes": [
     {
       "name": "profile",
