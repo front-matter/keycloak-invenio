@@ -14,11 +14,10 @@ RUN cd auto-username && mvn clean package -DskipTests
 # Note: Tests are skipped as they exist only in local development
 RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
-  mvn clean package -DskipTests && \
-  ls -la target/*.jar
+  mvn clean package -DskipTests
 
 # Final stage
-FROM quay.io/keycloak/keycloak:26.4
+FROM quay.io/keycloak/keycloak:26.5
 
 # Install keycloak-orcid extension
 ADD --chmod=644 https://github.com/eosc-kc/keycloak-orcid/releases/download/1.4.0/keycloak-orcid.jar /opt/keycloak/providers/keycloak-orcid.jar
