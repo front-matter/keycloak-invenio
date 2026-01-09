@@ -14,6 +14,8 @@ RUN cd auto-username && mvn clean package -DskipTests
 # Note: Tests are skipped as they exist only in local development
 RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
+  sed -i 's/Collections\.unmodifiableMap(new HashMap<>(builder\.templateData))/new HashMap<>(builder.templateData)/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
+  sed -i 's/Collections\.emptyMap()/new HashMap<>()/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
   mvn clean package -DskipTests
 
 # Final stage
