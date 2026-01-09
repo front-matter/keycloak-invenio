@@ -14,8 +14,13 @@ RUN cd auto-username && mvn clean package -DskipTests
 # Note: Tests are skipped as they exist only in local development
 RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
-  mvn clean package -DskipTests && \
-  ls -la target/*.jar
+  mvn clean package -DskipTests || (echo "Maven build failed" && exit 1) && \
+  echo "Built JAR files:" && \
+  ls -la target/ && \
+  if [ ! -f target/keycloak-2fa-email-authenticator*.jar ]; then \
+  echo "ERROR: JAR file not found in target directory"; \
+  exit 1; \
+  fi
 
 # Final stage
 FROM quay.io/keycloak/keycloak:26.4
@@ -26,8 +31,8 @@ ADD --chmod=644 https://github.com/eosc-kc/keycloak-orcid/releases/download/1.4.
 # Copy custom auto-username mapper
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
 
-# Copy Email OTP authenticator
-COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator.jar /opt/keycloak/providers/
+# Copy Email OTP authenticator (wildcard to handle version-specific names)
+COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator*.jar /opt/keycloak/providers/keycloak-2fa-email-authenticator.jar
 
 # Copy Keycloakify theme JAR
 COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
