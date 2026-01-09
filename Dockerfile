@@ -10,12 +10,6 @@ WORKDIR /build
 COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
-# Clone and build keycloak-2fa-email-authenticator
-# Note: Tests are skipped as they exist only in local development
-RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.git && \
-  cd keycloak-2fa-email-authenticator && \
-  mvn clean package -DskipTests
-
 # Final stage
 FROM quay.io/keycloak/keycloak:26.5
 
@@ -24,9 +18,6 @@ ADD --chmod=644 https://github.com/eosc-kc/keycloak-orcid/releases/download/1.4.
 
 # Copy custom auto-username mapper
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
-
-# Copy Email OTP authenticator
-COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator-v26.1.0.jar /opt/keycloak/providers/
 
 # Copy Keycloakify theme JAR
 COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
@@ -47,7 +38,6 @@ RUN echo "============================================" && \
   echo "Verifying installed extensions:" && \
   ls -1 /opt/keycloak/providers/ && \
   test -f /opt/keycloak/providers/keycloak-orcid.jar && echo "✓ ORCID Identity Provider" || (echo "✗ ORCID provider missing" && exit 1) && \
-  test -f /opt/keycloak/providers/keycloak-2fa-email-authenticator-v26.1.0.jar && echo "✓ Email OTP Authenticator" || (echo "✗ Email OTP missing" && exit 1) && \
   test -f /opt/keycloak/providers/auto-username.jar && echo "✓ Auto Username Mapper" || (echo "✗ Auto-username missing" && exit 1) && \
   test -f /opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
   echo "============================================" && \
