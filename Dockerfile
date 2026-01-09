@@ -48,7 +48,7 @@ RUN echo "============================================" && \
   echo "Verifying installed extensions:" && \
   ls -1 /opt/keycloak/providers/ && \
   test -f /opt/keycloak/providers/keycloak-orcid.jar && echo "✓ ORCID Identity Provider" || (echo "✗ ORCID provider missing" && exit 1) && \
-  test -f /opt/keycloak/providers/keycloak-2fa-email-authenticator.jar && echo "✓ Email OTP Authenticator" || (echo "✗ Email OTP missing" && exit 1) && \
+  test -f /opt/keycloak/providers/keycloak-2fa-email-authenticator-v26.1.0.jar && echo "✓ Email OTP Authenticator" || (echo "✗ Email OTP missing" && exit 1) && \
   test -f /opt/keycloak/providers/auto-username.jar && echo "✓ Auto Username Mapper" || (echo "✗ Auto-username missing" && exit 1) && \
   test -f /opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
   echo "============================================" && \
