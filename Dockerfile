@@ -18,17 +18,17 @@ RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.gi
   sed -i 's/Collections\.emptyMap()/new HashMap<>()/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
   mvn clean package -DskipTests
 
+# Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
+RUN curl -L https://github.com/eosc-kc/keycloak-orcid/archive/refs/tags/1.4.0.tar.gz | tar xz && \
+  cd keycloak-orcid-1.4.0 && \
+  sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
+  mvn clean package -DskipTests
+
 # Final stage
 FROM quay.io/keycloak/keycloak:26.5
 
-# Install keycloak-orcid extension - build from source with Keycloak 26.5 compatibility patch
-RUN cd /tmp && \
-  curl -L https://github.com/eosc-kc/keycloak-orcid/archive/refs/tags/1.4.0.tar.gz | tar xz && \
-  cd keycloak-orcid-1.4.0 && \
-  sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
-  mvn clean package -DskipTests && \
-  cp target/keycloak-orcid.jar /opt/keycloak/providers/ && \
-  cd / && rm -rf /tmp/keycloak-orcid-1.4.0
+# Copy keycloak-orcid from builder
+COPY --from=builder /build/keycloak-orcid-1.4.0/target/keycloak-orcid.jar /opt/keycloak/providers/
 
 # Copy custom auto-username mapper
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
