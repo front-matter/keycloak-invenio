@@ -9,3 +9,14 @@ body.kcBodyClass {
 .fa-orcid:before {
   content: "\f8d2";
 }
+
+/* Add spacing between social provider icons and text */
+.kcCommonLogoIdP {
+  margin-right: 0.5rem;
+}
+
+/* Add margin to social provider buttons */
+.kcFormSocialAccountListButtonClass {
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+}
