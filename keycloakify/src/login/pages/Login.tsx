@@ -63,10 +63,10 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                             <ul className={kcClsx("kcFormSocialAccountListClass", social.providers.length > 3 && "kcFormSocialAccountListGridClass")}>
                                 {(social.providers as SocialProvider[]).map((...[p, , providers]) => {
                                     // Assign icon from socialProviderIconMap based on provider alias
-                                    const providerWithIcon = {
-                                        ...p,
-                                        icon: socialProviderIconMap[p.alias as keyof typeof socialProviderIconMap] || p.icon
-                                    };
+                                    const icon = socialProviderIconMap[p.alias as keyof typeof socialProviderIconMap];
+
+                                    // For ORCID, use iconClasses as FontAwesome may not serialize properly in production
+                                    const iconClasses = p.alias === "orcid" ? "fa-brands fa-orcid" : p.iconClasses;
 
                                     return (
                                         <li key={p.alias}>
@@ -79,17 +79,13 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                                 type="button"
                                                 href={p.loginUrl}
                                             >
-                                                {providerWithIcon.icon ? (
-                                                    <FontAwesomeIcon
-                                                        icon={providerWithIcon.icon}
-                                                        className={clsx("kcCommonLogoIdP")}
-                                                        aria-hidden="true"
-                                                    />
-                                                ) : (
-                                                    p.iconClasses && <i className={clsx("kcCommonLogoIdP", p.iconClasses)} aria-hidden="true"></i>
-                                                )}
+                                                {icon && typeof window !== "undefined" ? (
+                                                    <FontAwesomeIcon icon={icon} className={clsx("kcCommonLogoIdP")} aria-hidden="true" />
+                                                ) : iconClasses ? (
+                                                    <i className={clsx("kcCommonLogoIdP", iconClasses)} aria-hidden="true"></i>
+                                                ) : null}
                                                 <span
-                                                    className={clsx(kcClsx("kcFormSocialAccountNameClass"), p.iconClasses && "kc-social-icon-text")}
+                                                    className={clsx(kcClsx("kcFormSocialAccountNameClass"), iconClasses && "kc-social-icon-text")}
                                                     dangerouslySetInnerHTML={{ __html: kcSanitize(p.displayName) }}
                                                 ></span>
                                             </a>

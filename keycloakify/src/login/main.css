@@ -5,3 +5,7 @@ body.kcBodyClass {
 .login-pf body {
   background-image: none !important;
 }
+/* FontAwesome ORCID icon support */
+.fa-orcid:before {
+  content: "\f8d2";
+}
