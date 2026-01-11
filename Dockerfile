@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 
 # Install tools for fetching/building sources
-RUN apt-get update && apt-get install -y git curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git curl ca-certificates patch && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
