@@ -1,26 +1,6 @@
---- a/src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java
-+++ b/src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java
-@@ -47,7 +47,7 @@ public class EmailMessage {
-         this.recipient = builder.recipient;
-         this.subject = builder.subject;
-         this.bodyText = builder.bodyText;
--        this.templateData = Collections.unmodifiableMap(new HashMap<>(builder.templateData));
-+        this.templateData = new HashMap<>(builder.templateData);
-         this.fromEmail = builder.fromEmail;
-         this.fromName = builder.fromName;
-     }
-@@ -113,7 +113,7 @@ public class EmailMessage {
-         private String fromName;
- 
-         public Builder() {
--            this.templateData = Collections.emptyMap();
-+            this.templateData = new HashMap<>();
-         }
- 
-         public Builder recipient(String recipient) {
 --- a/src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java
 +++ b/src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java
-@@ -512,12 +512,9 @@ public class EmailAuthenticatorForm extends AbstractUsernameFormAuthenticator {
+@@ -512,12 +512,8 @@ public class EmailAuthenticatorForm extends AbstractUsernameFormAuthenticator {
      }
  
      private String buildMagicLink(AuthenticationFlowContext context, String code) {
@@ -33,7 +13,8 @@
 -        // in "Page has expired".
 -        builder.replaceQueryParam(EmailConstants.MAGIC_LINK_MARKER_PARAM);
 -        builder.replaceQueryParam(EmailConstants.CODE);
-+        UriBuilder builder = context.getActionUrl(context.getExecution().getId());
++        // Use form action URL which has correct parameters
++        UriBuilder builder = UriBuilder.fromUri(context.getActionUrl(context.getExecution().getId()));
          builder.queryParam(EmailConstants.MAGIC_LINK_MARKER_PARAM, "1");
          builder.queryParam(EmailConstants.CODE, code);
          return builder.build().toString();
