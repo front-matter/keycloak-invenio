@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 
 # Install tools for fetching/building sources
-RUN apt-get update && apt-get install -y git curl ca-certificates patch && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -11,11 +11,8 @@ COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
 # Clone and build keycloak-2fa-email-authenticator from magic-link branch
-# Copy patch file and apply it
-COPY email-authenticator.patch /build/
 RUN git clone --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
-  patch -p1 < /build/email-authenticator.patch && \
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
