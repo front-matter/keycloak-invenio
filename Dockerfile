@@ -11,15 +11,11 @@ COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
 # Clone and build keycloak-2fa-email-authenticator from magic-link branch
-# The magic-link branch already includes magic link functionality
-# Patches: 1) HashMap compatibility, 2) Use getActionUrl directly (not fromUri)
+# Copy patch file and apply it
+COPY email-authenticator.patch /build/
 RUN git clone --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
-  sed -i 's/Collections\.unmodifiableMap(new HashMap<>(builder\.templateData))/new HashMap<>(builder.templateData)/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
-  sed -i 's/Collections\.emptyMap()/new HashMap<>()/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
-  sed -i 's/UriBuilder builder = UriBuilder\.fromUri(context\.getUriInfo()\.getRequestUri());/UriBuilder builder = context.getActionUrl(context.getExecution().getId());/g' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
-  sed -i '/builder\.replaceQueryParam(EmailConstants\.MAGIC_LINK_MARKER_PARAM);/d' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
-  sed -i '/builder\.replaceQueryParam(EmailConstants\.CODE);/d' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
+  patch -p1 < /build/email-authenticator.patch && \
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
