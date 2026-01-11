@@ -11,8 +11,8 @@ COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
 # Clone and build keycloak-2fa-email-authenticator from magic-link branch
-RUN git clone --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
-  cd keycloak-2fa-email-authenticator && \
+RUN curl -L https://github.com/front-matter/keycloak-2fa-email-authenticator/archive/refs/heads/magic-link.tar.gz | tar xz && \
+  cd keycloak-2fa-email-authenticator-magic-link && \
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
@@ -31,7 +31,7 @@ COPY --from=builder /build/keycloak-orcid-1.4.0/target/keycloak-orcid.jar /opt/k
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
 
 # Copy Email OTP authenticator
-COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator-*.jar /opt/keycloak/providers/
+COPY --from=builder /build/keycloak-2fa-email-authenticator-magic-link/target/keycloak-2fa-email-authenticator-*.jar /opt/keycloak/providers/
 
 # Copy Keycloakify theme JAR
 COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
