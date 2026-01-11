@@ -1,0 +1,20 @@
+.git
+.gitignore
+**/.DS_Store
+
+# Maven / Java build output
+**/target/
+**/*.iml
+**/.idea/
+**/.classpath
+**/.project
+**/.settings/
+
+# Node / frontend
+**/node_modules/
+**/.pnpm-store/
+keycloakify/dist/
+keycloakify/.vite/
+
+# VCS / misc
+**/*.log

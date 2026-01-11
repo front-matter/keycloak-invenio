@@ -1,8 +1,8 @@
 # Build stage - compile extensions
 FROM maven:3.9-eclipse-temurin-21 AS builder
 
-# Install git for cloning repositories
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# Install tools for fetching/building sources
+RUN apt-get update && apt-get install -y git curl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -11,7 +11,8 @@ COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
 # Clone and build keycloak-2fa-email-authenticator from magic-link branch
-# The magic-link branch already includes magic link functionality, so we only need the HashMap patch
+# The magic-link branch already includes magic link functionality
+# Patches: 1) HashMap compatibility for Keycloak 26.5+
 RUN git clone --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
   sed -i 's/Collections\.unmodifiableMap(new HashMap<>(builder\.templateData))/new HashMap<>(builder.templateData)/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
