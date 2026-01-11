@@ -16,6 +16,7 @@ RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.gi
   cd keycloak-2fa-email-authenticator && \
   sed -i 's/Collections\.unmodifiableMap(new HashMap<>(builder\.templateData))/new HashMap<>(builder.templateData)/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
   sed -i 's/Collections\.emptyMap()/new HashMap<>()/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
+  sed -i '/templateData\.put("ttl", ttl);/a\        \n        String realmUrl = session.getContext().getUri().getBaseUri().toString() + "realms/" + realm.getName();\n        templateData.put("realmUrl", realmUrl);' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
