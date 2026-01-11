@@ -12,11 +12,12 @@ RUN cd auto-username && mvn clean package -DskipTests
 
 # Clone and build keycloak-2fa-email-authenticator from magic-link branch
 # The magic-link branch already includes magic link functionality
-# Patches: 1) HashMap compatibility for Keycloak 26.5+
+# Patches: 1) HashMap compatibility for Keycloak 26.5+, 2) Build magic link from action URL
 RUN git clone --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
   sed -i 's/Collections\.unmodifiableMap(new HashMap<>(builder\.templateData))/new HashMap<>(builder.templateData)/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
   sed -i 's/Collections\.emptyMap()/new HashMap<>()/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
+  sed -i 's/UriBuilder\.fromUri(context\.getUriInfo()\.getRequestUri())/UriBuilder.fromUri(context.getActionUrl(null))/g' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
