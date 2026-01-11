@@ -15,13 +15,17 @@
     <div class="code" id="code-value">${code}</div>
     <div class="info">
       <p><strong>Important:</strong> This code will expire in ${ttl} seconds.</p>
+      <#if magicLink??>
       <p>Click the button below to automatically log in with this code:</p>
       <div style="text-align: center;">
-        <a href="${loginActionUrl!''}?code=${code}" class="button">Log In Automatically</a>
+        <a href="${magicLink}" class="button">Log In Automatically</a>
       </div>
       <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
-        Or copy the code above and paste it manually: <a href="${realmUrl!''}/account">Go to Login Page</a>
+        Or copy the code above and paste it manually.
       </p>
+      <#else>
+      <p>Copy the code above and paste it on the login page to continue.</p>
+      </#if>
     </div>
     <p>If you did not request this code, please ignore this email.</p>
   </div>

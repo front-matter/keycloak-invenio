@@ -10,14 +10,12 @@ WORKDIR /build
 COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
-# Clone and build keycloak-2fa-email-authenticator
-# Note: Tests are skipped as they exist only in local development
-RUN git clone https://github.com/mesutpiskin/keycloak-2fa-email-authenticator.git && \
+# Clone and build keycloak-2fa-email-authenticator from magic-link branch
+# The magic-link branch already includes magic link functionality, so we only need the HashMap patch
+RUN git clone --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
   cd keycloak-2fa-email-authenticator && \
   sed -i 's/Collections\.unmodifiableMap(new HashMap<>(builder\.templateData))/new HashMap<>(builder.templateData)/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
   sed -i 's/Collections\.emptyMap()/new HashMap<>()/g' src/main/java/com/mesutpiskin/keycloak/auth/email/model/EmailMessage.java && \
-  sed -i '/templateData\.put("ttl", ttl);/a\        \n        String realmUrl = session.getContext().getUri().getBaseUri().toString() + "realms/" + realm.getName();\n        templateData.put("realmUrl", realmUrl);\n        templateData.put("loginActionUrl", context.getActionUrl(null).toString());' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
-  sed -i '/public void action(AuthenticationFlowContext context) {/a\        \/\/ Check for magic link code in URL parameter\n        MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();\n        String magicCode = context.getHttpRequest().getUri().getQueryParameters().getFirst("code");\n        if (magicCode != null \&\& !magicCode.isEmpty()) {\n            formData.putSingle("emailCode", magicCode);\n        }' src/main/java/com/mesutpiskin/keycloak/auth/email/EmailAuthenticatorForm.java && \
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
