@@ -17,7 +17,7 @@
       <p><strong>Important:</strong> This code will expire in ${ttl} seconds.</p>
       <p>Click the button below to return to the login page and enter this code:</p>
       <div style="text-align: center;">
-        <a href="${realmUrl!''}/account#code=${code}" class="button">Continue to Login</a>
+        <a href="${realmUrl!''}/account" class="button">Continue to Login</a>
       </div>
       <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
         Or copy the code above and paste it manually in your browser window.
