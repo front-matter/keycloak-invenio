@@ -15,12 +15,12 @@
     <div class="code" id="code-value">${code}</div>
     <div class="info">
       <p><strong>Important:</strong> This code will expire in ${ttl} seconds.</p>
-      <p>Click the button below to return to the login page and enter this code:</p>
+      <p>Click the button below to automatically log in with this code:</p>
       <div style="text-align: center;">
-        <a href="${realmUrl!''}/account" class="button">Continue to Login</a>
+        <a href="${loginActionUrl!''}?code=${code}" class="button">Log In Automatically</a>
       </div>
       <p style="font-size: 0.9em; color: #666; margin-top: 15px;">
-        Or copy the code above and paste it manually in your browser window.
+        Or copy the code above and paste it manually: <a href="${realmUrl!''}/account">Go to Login Page</a>
       </p>
     </div>
     <p>If you did not request this code, please ignore this email.</p>
