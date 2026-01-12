@@ -11,7 +11,7 @@
   "loginTheme": "invenio",
   "accountTheme": "invenio",
   "adminTheme": "keycloak",
-  "emailTheme": "keycloak",
+  "emailTheme": "invenio",
   "internationalizationEnabled": true,
   "supportedLocales": ["en", "de"],
   "defaultLocale": "en",

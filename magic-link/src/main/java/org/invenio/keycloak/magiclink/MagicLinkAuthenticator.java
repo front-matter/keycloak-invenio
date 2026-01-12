@@ -90,8 +90,21 @@ public class MagicLinkAuthenticator implements Authenticator {
           .setAuthNote(ATTEMPTED_USERNAME, email);
 
       showEmailSentPage(context);
-    } catch (Exception e) {
+    } catch (EmailException e) {
+      // Log detailed email error
       context.getEvent().error(Errors.EMAIL_SEND_FAILED);
+      context.getEvent().detail("email_error", e.getMessage());
+      org.jboss.logging.Logger.getLogger(getClass()).error("Failed to send magic link email to: " + email, e);
+
+      Response challenge = context.form()
+          .setError("Failed to send email. Please try again.")
+          .createLoginUsername();
+      context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge);
+    } catch (Exception e) {
+      // Log unexpected errors
+      org.jboss.logging.Logger.getLogger(getClass()).error("Unexpected error during magic link generation", e);
+      context.getEvent().error(Errors.EMAIL_SEND_FAILED);
+
       Response challenge = context.form()
           .setError("Failed to send email. Please try again.")
           .createLoginUsername();
