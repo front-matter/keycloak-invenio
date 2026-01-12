@@ -43,8 +43,24 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
       MagicLinkActionToken token,
       ActionTokenContext<MagicLinkActionToken> tokenContext) {
 
-    UserModel user = tokenContext.getAuthenticationSession().getAuthenticatedUser();
+    // Get user from token (not from session, as they're not authenticated yet)
+    UserModel user = tokenContext.getSession().users().getUserById(
+        tokenContext.getRealm(),
+        token.getUserId());
+
+    if (user == null) {
+      tokenContext.getEvent()
+          .detail("user_id", token.getUserId())
+          .error(Errors.USER_NOT_FOUND);
+      return tokenContext.getSession().getProvider(org.keycloak.forms.login.LoginFormsProvider.class)
+          .setError(Messages.INVALID_USER)
+          .createErrorPage(Response.Status.BAD_REQUEST);
+    }
+
+    // Set user as authenticated in the session
     AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
+    authSession.setAuthenticatedUser(user);
+
     ClientModel client = authSession.getClient();
 
     // Get redirect URI
