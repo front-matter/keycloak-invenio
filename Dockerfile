@@ -16,8 +16,8 @@ RUN git clone --depth 1 --branch magic-link https://github.com/front-matter/keyc
   mvn clean package -DskipTests
 
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
-RUN curl -L https://github.com/eosc-kc/keycloak-orcid/archive/refs/tags/1.4.0.tar.gz | tar xz && \
-  cd keycloak-orcid-1.4.0 && \
+RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid.git && \
+  cd keycloak-orcid && \
   sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
   mvn clean package -DskipTests
 
@@ -25,7 +25,7 @@ RUN curl -L https://github.com/eosc-kc/keycloak-orcid/archive/refs/tags/1.4.0.ta
 FROM quay.io/keycloak/keycloak:26.5
 
 # Copy keycloak-orcid from builder
-COPY --from=builder /build/keycloak-orcid-1.4.0/target/keycloak-orcid.jar /opt/keycloak/providers/
+COPY --from=builder /build/keycloak-orcid/target/keycloak-orcid.jar /opt/keycloak/providers/
 
 # Copy custom auto-username mapper
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
