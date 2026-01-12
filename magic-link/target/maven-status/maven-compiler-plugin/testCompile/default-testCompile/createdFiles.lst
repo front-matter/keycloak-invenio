@@ -1,0 +1,4 @@
+org/invenio/keycloak/magiclink/MagicLinkActionTokenHandlerFactoryTest.class
+org/invenio/keycloak/magiclink/MagicLinkActionTokenTest.class
+org/invenio/keycloak/magiclink/MagicLinkAuthenticatorTest.class
+org/invenio/keycloak/magiclink/MagicLinkAuthenticatorFactoryTest.class

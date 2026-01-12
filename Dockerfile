@@ -10,17 +10,14 @@ WORKDIR /build
 COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
+# Build magic-link authenticator
+COPY magic-link/ ./magic-link/
+RUN cd magic-link && mvn clean package -DskipTests
+
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
 RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid.git && \
   cd keycloak-orcid && \
   sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
-  mvn clean package -DskipTests
-
-# Clone and build keycloak-2fa-email-authenticator from magic-link branch
-# Bust cache when new commits are pushed by fetching latest commit hash
-ADD https://api.github.com/repos/front-matter/keycloak-2fa-email-authenticator/git/refs/heads/magic-link /tmp/magic-link-version.json
-RUN git clone --depth 1 --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
-  cd keycloak-2fa-email-authenticator && \
   mvn clean package -DskipTests
 
 # Final stage
@@ -32,14 +29,11 @@ COPY --from=builder /build/keycloak-orcid/target/keycloak-orcid.jar /opt/keycloa
 # Copy custom auto-username mapper
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
 
-# Copy Email OTP authenticator
-COPY --from=builder /build/keycloak-2fa-email-authenticator/target/keycloak-2fa-email-authenticator-*.jar /opt/keycloak/providers/
+# Copy magic-link authenticator
+COPY --from=builder /build/magic-link/target/magic-link.jar /opt/keycloak/providers/
 
 # Copy Keycloakify theme JAR
 COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
-
-# Copy email templates for Email OTP authenticator
-COPY ./keycloakify/src/login/resources/email /opt/keycloak/themes/invenio/email
 
 # Copy realm configuration
 COPY realm-config.json /opt/keycloak/data/import/realm-config.json
@@ -57,8 +51,8 @@ RUN echo "============================================" && \
   echo "Verifying installed extensions:" && \
   ls -1 /opt/keycloak/providers/ && \
   test -f /opt/keycloak/providers/keycloak-orcid.jar && echo "✓ ORCID Identity Provider" || (echo "✗ ORCID provider missing" && exit 1) && \
-  ls /opt/keycloak/providers/keycloak-2fa-email-authenticator-*.jar >/dev/null 2>&1 && echo "✓ Email OTP Authenticator" || (echo "✗ Email OTP missing" && exit 1) && \
   test -f /opt/keycloak/providers/auto-username.jar && echo "✓ Auto Username Mapper" || (echo "✗ Auto-username missing" && exit 1) && \
+  test -f /opt/keycloak/providers/magic-link.jar && echo "✓ Magic Link Authenticator" || (echo "✗ Magic Link missing" && exit 1) && \
   test -f /opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
   echo "============================================" && \
   echo "All extensions installed successfully!"
