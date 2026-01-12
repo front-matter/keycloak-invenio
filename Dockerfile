@@ -10,15 +10,17 @@ WORKDIR /build
 COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
-# Clone and build keycloak-2fa-email-authenticator from magic-link branch
-RUN git clone --depth 1 --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
-  cd keycloak-2fa-email-authenticator && \
-  mvn clean package -DskipTests
-
 # Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
 RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid.git && \
   cd keycloak-orcid && \
   sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
+  mvn clean package -DskipTests
+
+# Clone and build keycloak-2fa-email-authenticator from magic-link branch
+# Bust cache when new commits are pushed by fetching latest commit hash
+ADD https://api.github.com/repos/front-matter/keycloak-2fa-email-authenticator/git/refs/heads/magic-link /tmp/magic-link-version.json
+RUN git clone --depth 1 --branch magic-link https://github.com/front-matter/keycloak-2fa-email-authenticator.git && \
+  cd keycloak-2fa-email-authenticator && \
   mvn clean package -DskipTests
 
 # Final stage
