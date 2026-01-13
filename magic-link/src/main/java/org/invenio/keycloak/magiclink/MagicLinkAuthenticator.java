@@ -142,7 +142,7 @@ public class MagicLinkAuthenticator implements Authenticator {
     return builder.build(context.getRealm().getName()).toString();
   }
 
-  private void sendMagicLinkEmail(AuthenticationFlowContext context, UserModel user, String link)
+  protected void sendMagicLinkEmail(AuthenticationFlowContext context, UserModel user, String link)
       throws EmailException {
     EmailTemplateProvider emailProvider = context.getSession().getProvider(EmailTemplateProvider.class);
     emailProvider.setRealm(context.getRealm());
@@ -196,7 +196,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         }
       }
     }
-    return 3600; // Default: 1 hour
+    return 900; // Default: 15 minutes
   }
 
   @Override

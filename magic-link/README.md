@@ -85,7 +85,7 @@ Navigate to: **Authentication → Flows**
    | Setting | Description | Default |
    |---------|-------------|---------|
    | **Auto-create users** | Create user accounts for new emails | `false` |
-   | **Token validity** | Link expiration time in seconds | `3600` (1 hour) |
+   | **Token validity** | Link expiration time in seconds | `900` (15 minutes) |
 
 4. **Bind flow:**
    - Go to **Authentication → Bindings**
@@ -335,7 +335,7 @@ Implement custom `EmailTemplateProvider` for advanced scenarios:
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `createUser` | boolean | `false` | Auto-create user accounts |
-| `tokenValidity` | integer | `3600` | Token lifetime in seconds |
+| `tokenValidity` | integer | `900` | Token lifetime in seconds |
 
 ### Events
 

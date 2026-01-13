@@ -68,8 +68,8 @@ public class MagicLinkAuthenticatorFactory implements AuthenticatorFactory {
     tokenValidity.setType(ProviderConfigProperty.STRING_TYPE);
     tokenValidity.setName("tokenValidity");
     tokenValidity.setLabel("Token validity (seconds)");
-    tokenValidity.setHelpText("How long the magic link remains valid. Default: 3600 (1 hour)");
-    tokenValidity.setDefaultValue("3600");
+    tokenValidity.setHelpText("How long the magic link remains valid. Default: 900 (15 minutes)");
+    tokenValidity.setDefaultValue("900");
     properties.add(tokenValidity);
 
     return properties;
