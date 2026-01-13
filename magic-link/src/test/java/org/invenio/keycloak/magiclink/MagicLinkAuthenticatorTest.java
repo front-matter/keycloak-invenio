@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.keycloak.email.EmailTemplateProvider;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -120,27 +121,28 @@ class MagicLinkAuthenticatorTest {
         UserModel mockUser = mock(UserModel.class);
         EmailTemplateProvider emailProvider = mock(EmailTemplateProvider.class);
         KeycloakSession mockSession = mock(KeycloakSession.class);
+        AuthenticationFlowContext mockContext = mock(AuthenticationFlowContext.class);
+        RealmModel mockRealm = mock(RealmModel.class);
 
-        when(realm.getName()).thenReturn(testRealm);
-        when(context.getRealm()).thenReturn(realm);
-        when(context.getSession()).thenReturn(mockSession);
-        when(context.getAuthenticationSession()).thenReturn(authSession);
-        when(mockUser.isEnabled()).thenReturn(true);
-        when(mockUser.getEmail()).thenReturn(testEmail);
+        when(mockRealm.getDisplayName()).thenReturn(testRealm);
+        when(mockContext.getRealm()).thenReturn(mockRealm);
+        when(mockContext.getSession()).thenReturn(mockSession);
         when(mockSession.getProvider(EmailTemplateProvider.class)).thenReturn(emailProvider);
 
         // Capture subject argument
         doAnswer(invocation -> {
             String subjectKey = invocation.getArgument(0);
-            Map<String, Object> attrs = invocation.getArgument(2);
-            // Simuliere die Übersetzung
-            String subject = "Sign in to " + testRealm;
-            assertTrue(subject.contains(testRealm), "Subject should contain realm name");
+            List<?> subjectParams = invocation.getArgument(1);
+            Map<String, Object> attrs = invocation.getArgument(3);
+            // Verify realm name is passed as parameter
+            assertNotNull(subjectParams, "Subject parameters should not be null");
+            assertFalse(subjectParams.isEmpty(), "Subject parameters should contain realm name");
+            assertEquals(testRealm, subjectParams.get(0), "First parameter should be realm name");
             return null;
-        }).when(emailProvider).send(anyString(), anyString(), anyMap());
+        }).when(emailProvider).send(anyString(), anyList(), anyString(), anyMap());
 
         // Act
         MagicLinkAuthenticator authenticator = new MagicLinkAuthenticator();
-        authenticator.sendMagicLinkEmail(context, mockUser, "https://example.com/magic-link");
+        authenticator.sendMagicLinkEmail(mockContext, mockUser, "https://example.com/magic-link");
     }
 }
