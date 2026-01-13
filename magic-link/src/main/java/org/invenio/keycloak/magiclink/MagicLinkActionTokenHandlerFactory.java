@@ -12,7 +12,8 @@ import org.keycloak.models.KeycloakSessionFactory;
 public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFactory<MagicLinkActionToken> {
 
   private static final Logger logger = Logger.getLogger(MagicLinkActionTokenHandlerFactory.class);
-  public static final String PROVIDER_ID = "magic-link-token-handler";
+  // PROVIDER_ID must match TOKEN_TYPE for Keycloak to route tokens correctly
+  public static final String PROVIDER_ID = "magic-link";
 
   @Override
   public MagicLinkActionTokenHandler create(KeycloakSession session) {
