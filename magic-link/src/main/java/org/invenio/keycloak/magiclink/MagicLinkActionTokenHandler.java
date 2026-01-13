@@ -1,9 +1,12 @@
 package org.invenio.keycloak.magiclink;
 
 import jakarta.ws.rs.core.Response;
+import org.keycloak.TokenVerifier.Predicate;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.actiontoken.AbstractActionTokenHandler;
 import org.keycloak.authentication.actiontoken.ActionTokenContext;
+import org.keycloak.authentication.actiontoken.DefaultActionToken;
+import org.keycloak.authentication.actiontoken.TokenUtils;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
 import org.keycloak.models.ClientModel;
@@ -29,6 +32,13 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                 Messages.INVALID_REQUEST,
                 EventType.EXECUTE_ACTION_TOKEN,
                 Errors.INVALID_REQUEST);
+    }
+
+    @Override
+    public Predicate<? super MagicLinkActionToken>[] getVerifiers(
+            ActionTokenContext<MagicLinkActionToken> tokenContext) {
+        return TokenUtils.predicates(
+                DefaultActionToken.ACTION_TOKEN_BASIC_CHECKS);
     }
 
     @Override

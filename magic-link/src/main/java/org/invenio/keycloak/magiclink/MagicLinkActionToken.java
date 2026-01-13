@@ -25,7 +25,7 @@ public class MagicLinkActionToken extends DefaultActionToken {
       String clientId,
       String redirectUri,
       Boolean rememberMe) {
-    super(userId, TOKEN_TYPE, absoluteExpirationInSecs, null);
+    super(userId, TOKEN_TYPE, absoluteExpirationInSecs, null, null);
     this.redirectUri = redirectUri;
     this.issuedFor = clientId;
     this.rememberMe = rememberMe;
