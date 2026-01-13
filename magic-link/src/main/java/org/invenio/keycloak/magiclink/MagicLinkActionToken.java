@@ -49,6 +49,7 @@ public class MagicLinkActionToken extends DefaultActionToken {
   }
 
   public void setRedirectUri(String redirectUri) {
+    logger.infof("Magic Link Token: setRedirectUri called - value=%s", redirectUri);
     this.redirectUri = redirectUri;
   }
 
@@ -57,6 +58,16 @@ public class MagicLinkActionToken extends DefaultActionToken {
   }
 
   public void setRememberMe(Boolean rememberMe) {
+    logger.infof("Magic Link Token: setRememberMe called - value=%s", rememberMe);
     this.rememberMe = rememberMe;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "MagicLinkActionToken[id=%s, userId=%s, type=%s, nonce=%s, exp=%d, iat=%d, issuedFor=%s, authSessionId=%s, redirectUri=%s, rememberMe=%s]",
+        getId(), getUserId(), getType(), getActionVerificationNonce(),
+        getExp() != null ? getExp() : -1, getIat() != null ? getIat() : -1,
+        getIssuedFor(), getCompoundAuthenticationSessionId(), redirectUri, rememberMe);
   }
 }

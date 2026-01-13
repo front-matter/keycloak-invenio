@@ -50,13 +50,35 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                     authSession.getClient() != null ? authSession.getClient().getClientId() : "null",
                     authSession.getAuthenticatedUser() != null ? authSession.getAuthenticatedUser().getId() : "null");
         } else {
-            logger.warn("Magic Link: No authentication session found in token context");
+            logger.warn("Magic Link: No authentication session found in token context during getVerifiers()");
         }
 
-        Predicate<? super MagicLinkActionToken>[] predicates = TokenUtils.predicates(
+        // Create custom predicates with logging
+        Predicate<? super MagicLinkActionToken>[] basicChecks = TokenUtils.predicates(
                 DefaultActionToken.ACTION_TOKEN_BASIC_CHECKS);
-        logger.infof("Magic Link: Returning %d verifier predicates", predicates.length);
-        return predicates;
+
+        logger.infof("Magic Link: Applying %d basic check predicates", basicChecks.length);
+
+        // Wrap each predicate with logging
+        @SuppressWarnings("unchecked")
+        Predicate<? super MagicLinkActionToken>[] wrappedPredicates = new Predicate[basicChecks.length];
+        for (int i = 0; i < basicChecks.length; i++) {
+            final int index = i;
+            final Predicate<? super MagicLinkActionToken> originalPredicate = basicChecks[i];
+            wrappedPredicates[i] = (token) -> {
+                try {
+                    logger.infof("Magic Link: Running basic check #%d for token: %s", index, token);
+                    boolean result = originalPredicate.test(token);
+                    logger.infof("Magic Link: Basic check #%d result: %s", index, result);
+                    return result;
+                } catch (Exception e) {
+                    logger.errorf(e, "Magic Link: Basic check #%d failed with exception for token: %s", index, token);
+                    return false;
+                }
+            };
+        }
+
+        return wrappedPredicates;
     }
 
     @Override
