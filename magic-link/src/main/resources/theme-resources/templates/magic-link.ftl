@@ -1,6 +1,6 @@
 ${kcSanitize(msg("magicLinkEmailBody", linkExpiration))?no_esc}
 
-${link}
+${msg("magicLinkButton")}: ${link}
 
 ${msg("magicLinkSecurity")}
 
