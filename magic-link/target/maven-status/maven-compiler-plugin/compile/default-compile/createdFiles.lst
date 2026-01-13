@@ -1,5 +1,5 @@
 org/invenio/keycloak/magiclink/MagicLinkAuthenticatorFactory.class
+org/invenio/keycloak/magiclink/MagicLinkActionToken.class
 org/invenio/keycloak/magiclink/MagicLinkActionTokenHandler.class
 org/invenio/keycloak/magiclink/MagicLinkActionTokenHandlerFactory.class
 org/invenio/keycloak/magiclink/MagicLinkAuthenticator.class
-org/invenio/keycloak/magiclink/MagicLinkActionToken.class

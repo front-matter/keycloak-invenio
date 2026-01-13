@@ -20,109 +20,117 @@ import org.keycloak.sessions.AuthenticationSessionModel;
  */
 public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<MagicLinkActionToken> {
 
-  public static final String LOGIN_METHOD = "login_method";
+    public static final String LOGIN_METHOD = "login_method";
 
-  public MagicLinkActionTokenHandler() {
-    super(
-        MagicLinkActionToken.TOKEN_TYPE,
-        MagicLinkActionToken.class,
-        Messages.INVALID_REQUEST,
-        EventType.EXECUTE_ACTION_TOKEN,
-        Errors.INVALID_REQUEST);
-  }
-
-  @Override
-  public AuthenticationSessionModel startFreshAuthenticationSession(
-      MagicLinkActionToken token,
-      ActionTokenContext<MagicLinkActionToken> tokenContext) {
-    // Find client by clientId stored in the token
-    ClientModel client = tokenContext.getRealm().getClientByClientId(token.getIssuedFor());
-    if (client == null) {
-      return null;
-    }
-    return tokenContext.createAuthenticationSessionForClient(client.getId());
-  }
-
-  @Override
-  public Response handleToken(
-      MagicLinkActionToken token,
-      ActionTokenContext<MagicLinkActionToken> tokenContext) {
-
-    // Get user from token (not from session, as they're not authenticated yet)
-    UserModel user = tokenContext.getSession().users().getUserById(
-        tokenContext.getRealm(),
-        token.getUserId());
-
-    if (user == null) {
-      tokenContext.getEvent()
-          .detail("user_id", token.getUserId())
-          .error(Errors.USER_NOT_FOUND);
-      return tokenContext.getSession().getProvider(org.keycloak.forms.login.LoginFormsProvider.class)
-          .setError(Messages.INVALID_USER)
-          .createErrorPage(Response.Status.BAD_REQUEST);
+    public MagicLinkActionTokenHandler() {
+        super(
+                MagicLinkActionToken.TOKEN_TYPE,
+                MagicLinkActionToken.class,
+                Messages.INVALID_REQUEST,
+                EventType.EXECUTE_ACTION_TOKEN,
+                Errors.INVALID_REQUEST);
     }
 
-    // Set user as authenticated in the session
-    AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
-    authSession.setAuthenticatedUser(user);
-
-    ClientModel client = authSession.getClient();
-
-    // Get redirect URI
-    String redirectUri = token.getRedirectUri() != null
-        ? token.getRedirectUri()
-        : ResolveRelative.resolveRelativeUri(
-            tokenContext.getSession(),
-            client.getRootUrl(),
-            client.getBaseUrl());
-
-    // Validate redirect URI
-    String redirect = RedirectUtils.verifyRedirectUri(
-        tokenContext.getSession(),
-        redirectUri,
-        client);
-
-    if (redirect != null) {
-      authSession.setAuthNote(
-          AuthenticationManager.SET_REDIRECT_URI_AFTER_REQUIRED_ACTIONS,
-          "true");
-      authSession.setRedirectUri(redirect);
-      authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, redirectUri);
-
-      // Remember me functionality
-      if (Boolean.TRUE.equals(token.getRememberMe())) {
-        authSession.setAuthNote(
-            AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION,
-            "auth_remember");
-      }
-
-      // Mark email as verified (user clicked link in email)
-      user.setEmailVerified(true);
-
-      // Set user session note to track magic link login
-      authSession.setUserSessionNote(LOGIN_METHOD, "magic-link");
-
-      // Check for required actions
-      String nextAction = AuthenticationManager.nextRequiredAction(
-          tokenContext.getSession(),
-          authSession,
-          tokenContext.getRequest(),
-          tokenContext.getEvent());
-
-      return AuthenticationManager.redirectToRequiredActions(
-          tokenContext.getSession(),
-          tokenContext.getRealm(),
-          authSession,
-          tokenContext.getUriInfo(),
-          nextAction);
+    @Override
+    public AuthenticationSessionModel startFreshAuthenticationSession(
+            MagicLinkActionToken token,
+            ActionTokenContext<MagicLinkActionToken> tokenContext) {
+        // Find client by clientId stored in the token
+        ClientModel client = tokenContext.getRealm().getClientByClientId(token.getIssuedFor());
+        if (client == null) {
+            return null;
+        }
+        return tokenContext.createAuthenticationSessionForClient(client.getId());
     }
 
-    // Invalid redirect URI
-    tokenContext.getEvent()
-        .detail("redirect_uri", redirectUri)
-        .error(Errors.INVALID_REDIRECT_URI);
-    return tokenContext.getSession().getProvider(org.keycloak.forms.login.LoginFormsProvider.class)
-        .setError(Messages.INVALID_REDIRECT_URI)
-        .createErrorPage(Response.Status.BAD_REQUEST);
-  }
+    @Override
+    public boolean canUseTokenRepeatedly(
+            MagicLinkActionToken token,
+            ActionTokenContext<MagicLinkActionToken> tokenContext) {
+        // Magic link tokens are single-use only for security
+        return false;
+    }
+
+    @Override
+    public Response handleToken(
+            MagicLinkActionToken token,
+            ActionTokenContext<MagicLinkActionToken> tokenContext) {
+
+        // Get user from token (not from session, as they're not authenticated yet)
+        UserModel user = tokenContext.getSession().users().getUserById(
+                tokenContext.getRealm(),
+                token.getUserId());
+
+        if (user == null) {
+            tokenContext.getEvent()
+                    .detail("user_id", token.getUserId())
+                    .error(Errors.USER_NOT_FOUND);
+            return tokenContext.getSession().getProvider(org.keycloak.forms.login.LoginFormsProvider.class)
+                    .setError(Messages.INVALID_USER)
+                    .createErrorPage(Response.Status.BAD_REQUEST);
+        }
+
+        // Set user as authenticated in the session
+        AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
+        authSession.setAuthenticatedUser(user);
+
+        ClientModel client = authSession.getClient();
+
+        // Get redirect URI
+        String redirectUri = token.getRedirectUri() != null
+                ? token.getRedirectUri()
+                : ResolveRelative.resolveRelativeUri(
+                        tokenContext.getSession(),
+                        client.getRootUrl(),
+                        client.getBaseUrl());
+
+        // Validate redirect URI
+        String redirect = RedirectUtils.verifyRedirectUri(
+                tokenContext.getSession(),
+                redirectUri,
+                client);
+
+        if (redirect != null) {
+            authSession.setAuthNote(
+                    AuthenticationManager.SET_REDIRECT_URI_AFTER_REQUIRED_ACTIONS,
+                    "true");
+            authSession.setRedirectUri(redirect);
+            authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, redirectUri);
+
+            // Remember me functionality
+            if (Boolean.TRUE.equals(token.getRememberMe())) {
+                authSession.setAuthNote(
+                        AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION,
+                        "auth_remember");
+            }
+
+            // Mark email as verified (user clicked link in email)
+            user.setEmailVerified(true);
+
+            // Set user session note to track magic link login
+            authSession.setUserSessionNote(LOGIN_METHOD, "magic-link");
+
+            // Check for required actions
+            String nextAction = AuthenticationManager.nextRequiredAction(
+                    tokenContext.getSession(),
+                    authSession,
+                    tokenContext.getRequest(),
+                    tokenContext.getEvent());
+
+            return AuthenticationManager.redirectToRequiredActions(
+                    tokenContext.getSession(),
+                    tokenContext.getRealm(),
+                    authSession,
+                    tokenContext.getUriInfo(),
+                    nextAction);
+        }
+
+        // Invalid redirect URI
+        tokenContext.getEvent()
+                .detail("redirect_uri", redirectUri)
+                .error(Errors.INVALID_REDIRECT_URI);
+        return tokenContext.getSession().getProvider(org.keycloak.forms.login.LoginFormsProvider.class)
+                .setError(Messages.INVALID_REDIRECT_URI)
+                .createErrorPage(Response.Status.BAD_REQUEST);
+    }
 }
