@@ -32,7 +32,7 @@ public class MagicLinkActionToken extends DefaultActionToken {
   }
 
   // Required for Jackson deserialization
-  private MagicLinkActionToken() {
+  public MagicLinkActionToken() {
     super();
   }
 
