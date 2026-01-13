@@ -1,5 +1,6 @@
 package org.invenio.keycloak.magiclink;
 
+import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.authentication.actiontoken.ActionTokenHandlerFactory;
 import org.keycloak.models.KeycloakSession;
@@ -10,10 +11,12 @@ import org.keycloak.models.KeycloakSessionFactory;
  */
 public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFactory<MagicLinkActionToken> {
 
+  private static final Logger logger = Logger.getLogger(MagicLinkActionTokenHandlerFactory.class);
   public static final String PROVIDER_ID = "magic-link-token-handler";
 
   @Override
   public MagicLinkActionTokenHandler create(KeycloakSession session) {
+    logger.info("Magic Link: Creating MagicLinkActionTokenHandler instance");
     return new MagicLinkActionTokenHandler();
   }
 
@@ -24,12 +27,12 @@ public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFac
 
   @Override
   public void init(Config.Scope config) {
-    // No initialization needed
+    logger.infof("Magic Link: Handler factory initialized with ID: %s", PROVIDER_ID);
   }
 
   @Override
   public void postInit(KeycloakSessionFactory factory) {
-    // No post-initialization needed
+    logger.info("Magic Link: Handler factory post-initialization completed");
   }
 
   @Override

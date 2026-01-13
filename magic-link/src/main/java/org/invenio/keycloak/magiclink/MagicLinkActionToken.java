@@ -33,9 +33,11 @@ public class MagicLinkActionToken extends DefaultActionToken {
     this.redirectUri = redirectUri;
     this.issuedFor = clientId;
     this.rememberMe = rememberMe;
-    logger.infof("Magic Link Token: Created token - userId=%s, clientId=%s, expiration=%d, authSessionId=%s, nonce=%s",
+    logger.infof(
+        "Magic Link Token: Created token - userId=%s, clientId=%s, expiration=%d, authSessionId=%s, nonce=%s, id=%s",
         userId, clientId, absoluteExpirationInSecs, compoundAuthenticationSessionId,
-        this.getActionVerificationNonce() != null ? this.getActionVerificationNonce().toString() : "null");
+        this.getActionVerificationNonce() != null ? this.getActionVerificationNonce().toString() : "null",
+        this.getId());
   }
 
   // Required for Jackson deserialization
@@ -60,6 +62,8 @@ public class MagicLinkActionToken extends DefaultActionToken {
   public void setRememberMe(Boolean rememberMe) {
     logger.infof("Magic Link Token: setRememberMe called - value=%s", rememberMe);
     this.rememberMe = rememberMe;
+    // Log complete state after all setters have been called
+    logger.infof("Magic Link Token: After deserialization - %s", this.toString());
   }
 
   @Override
