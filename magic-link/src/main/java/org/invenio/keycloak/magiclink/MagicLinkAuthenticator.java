@@ -121,12 +121,17 @@ public class MagicLinkAuthenticator implements Authenticator {
     String redirectUri = context.getAuthenticationSession().getRedirectUri();
     Boolean rememberMe = false;
 
+    // Get authentication session ID
+    String authSessionId = context.getAuthenticationSession().getParentSession().getId() +
+        "." + context.getAuthenticationSession().getTabId();
+
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
         absoluteExpirationInSecs,
         clientId,
         redirectUri,
-        rememberMe);
+        rememberMe,
+        authSessionId);
 
     UriInfo uriInfo = context.getSession().getContext().getUri();
     String tokenString = token.serialize(

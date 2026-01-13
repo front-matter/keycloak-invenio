@@ -14,13 +14,15 @@ class MagicLinkActionTokenTest {
     String clientId = "test-client";
     String redirectUri = "https://example.com/callback";
     Boolean rememberMe = true;
+    String authSessionId = "session-123.tab-456";
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         userId,
         expirationTime,
         clientId,
         redirectUri,
-        rememberMe);
+        rememberMe,
+        authSessionId);
 
     assertEquals(userId, token.getUserId());
     assertEquals(clientId, token.getIssuedFor());
@@ -35,13 +37,15 @@ class MagicLinkActionTokenTest {
     int expirationTime = Time.currentTime() + 3600;
     String clientId = "client";
     String redirectUri = "https://example.com";
+    String authSessionId = "session-123.tab-456";
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         userId,
         expirationTime,
         clientId,
         redirectUri,
-        null);
+        null,
+        authSessionId);
 
     assertNotNull(token);
     assertEquals(userId, token.getUserId());
@@ -55,7 +59,8 @@ class MagicLinkActionTokenTest {
         Time.currentTime() + 1000,
         "client",
         "https://redirect.com",
-        false);
+        false,
+        "session-123.tab-456");
 
     token.setRedirectUri("https://new-redirect.com");
     assertEquals("https://new-redirect.com", token.getRedirectUri());
