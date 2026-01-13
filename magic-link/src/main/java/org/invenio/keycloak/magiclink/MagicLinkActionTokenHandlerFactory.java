@@ -27,12 +27,14 @@ public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFac
 
   @Override
   public void init(Config.Scope config) {
-    logger.infof("Magic Link: Handler factory initialized with ID: %s", PROVIDER_ID);
+    logger.infof("Magic Link: Handler factory initialized - ID: %s, TokenType: %s, HandlerClass: %s",
+        PROVIDER_ID, MagicLinkActionToken.TOKEN_TYPE, MagicLinkActionTokenHandler.class.getName());
   }
 
   @Override
   public void postInit(KeycloakSessionFactory factory) {
-    logger.info("Magic Link: Handler factory post-initialization completed");
+    logger.infof("Magic Link: Handler factory post-initialization completed - will handle token type: %s",
+        MagicLinkActionToken.TOKEN_TYPE);
   }
 
   @Override

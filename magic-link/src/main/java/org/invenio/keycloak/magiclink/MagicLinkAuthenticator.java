@@ -138,8 +138,8 @@ public class MagicLinkAuthenticator implements Authenticator {
         authSessionId);
 
     org.jboss.logging.Logger.getLogger(getClass()).infof(
-        "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s",
-        token.getId(), token.getActionVerificationNonce());
+        "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",
+        token.getId(), token.getActionVerificationNonce(), token.getType());
 
     UriInfo uriInfo = context.getSession().getContext().getUri();
     String tokenString = token.serialize(
@@ -148,8 +148,9 @@ public class MagicLinkAuthenticator implements Authenticator {
         uriInfo);
 
     org.jboss.logging.Logger.getLogger(getClass()).infof(
-        "Magic Link: Token serialized successfully - length=%d, userId=%s",
-        tokenString != null ? tokenString.length() : 0, user.getId());
+        "Magic Link: Token serialized successfully - length=%d, userId=%s, tokenStringPrefix=%s",
+        tokenString != null ? tokenString.length() : 0, user.getId(),
+        tokenString != null && tokenString.length() > 50 ? tokenString.substring(0, 50) : tokenString);
 
     UriBuilder builder = Urls.realmBase(uriInfo.getBaseUri())
         .path(RealmsResource.class, "getLoginActionsService")
