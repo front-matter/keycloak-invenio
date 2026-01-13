@@ -23,6 +23,7 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.RealmsResource;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -151,9 +152,11 @@ public class MagicLinkAuthenticator implements Authenticator {
     Map<String, Object> attributes = new HashMap<>();
     attributes.put("link", link);
     attributes.put("linkExpiration", getTokenValidity(context) / 60); // minutes
+    attributes.put("realmName", context.getRealm().getDisplayName());
 
     emailProvider.send(
         "magicLinkSubject",
+        Arrays.asList(context.getRealm().getDisplayName()),
         "magic-link.ftl",
         attributes);
   }

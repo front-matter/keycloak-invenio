@@ -13,11 +13,6 @@
     </p>
     
     <p style="margin-top: 20px; font-size: 12px; color: #999999;">
-        ${msg("magicLinkAlternative")}<br>
-        <a href="${link}" style="color: #0066cc; word-break: break-all;">${link}</a>
-    </p>
-    
-    <p style="margin-top: 20px; font-size: 12px; color: #999999;">
         ${msg("magicLinkSecurity")}
     </p>
 </@layout.emailLayout>
