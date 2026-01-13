@@ -17,7 +17,7 @@ public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFac
 
   @Override
   public MagicLinkActionTokenHandler create(KeycloakSession session) {
-    logger.info("Magic Link: Creating MagicLinkActionTokenHandler instance");
+    logger.debug("Magic Link: Creating MagicLinkActionTokenHandler instance");
     return new MagicLinkActionTokenHandler();
   }
 
@@ -29,20 +29,20 @@ public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFac
   // Required for Keycloak to deserialize tokens to the correct class (called via
   // reflection)
   public Class<MagicLinkActionToken> getTokenClass() {
-    logger.infof("Magic Link: getTokenClass() called - returning: %s", MagicLinkActionToken.class.getName());
+    logger.debugf("Magic Link: getTokenClass() called - returning: %s", MagicLinkActionToken.class.getName());
     return MagicLinkActionToken.class;
   }
 
   @Override
   public void init(Config.Scope config) {
-    logger.infof("Magic Link: Handler factory initialized - ID: %s, TokenType: %s, TokenClass: %s, HandlerClass: %s",
+    logger.debugf("Magic Link: Handler factory initialized - ID: %s, TokenType: %s, TokenClass: %s, HandlerClass: %s",
         PROVIDER_ID, MagicLinkActionToken.TOKEN_TYPE, MagicLinkActionToken.class.getName(),
         MagicLinkActionTokenHandler.class.getName());
   }
 
   @Override
   public void postInit(KeycloakSessionFactory factory) {
-    logger.infof("Magic Link: Handler factory post-initialization completed - will handle token type: %s",
+    logger.debugf("Magic Link: Handler factory post-initialization completed - will handle token type: %s",
         MagicLinkActionToken.TOKEN_TYPE);
   }
 

@@ -34,19 +34,19 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                 Messages.INVALID_REQUEST,
                 EventType.EXECUTE_ACTION_TOKEN,
                 Errors.INVALID_REQUEST);
-        logger.infof("Magic Link: Handler constructor called - registering for tokenType: %s, tokenClass: %s",
+        logger.debugf("Magic Link: Handler constructor called - registering for tokenType: %s, tokenClass: %s",
                 MagicLinkActionToken.TOKEN_TYPE, MagicLinkActionToken.class.getName());
     }
 
     @Override
     public Predicate<? super MagicLinkActionToken>[] getVerifiers(
             ActionTokenContext<MagicLinkActionToken> tokenContext) {
-        logger.infof("Magic Link: getVerifiers() called - realm=%s",
+        logger.debugf("Magic Link: getVerifiers() called - realm=%s",
                 tokenContext.getRealm().getName());
 
         AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
         if (authSession != null) {
-            logger.infof("Magic Link: Current auth session - sessionId=%s.%s, client=%s, user=%s",
+            logger.debugf("Magic Link: Current auth session - sessionId=%s.%s, client=%s, user=%s",
                     authSession.getParentSession() != null ? authSession.getParentSession().getId() : "null",
                     authSession.getTabId(),
                     authSession.getClient() != null ? authSession.getClient().getClientId() : "null",
@@ -59,7 +59,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
         Predicate<? super MagicLinkActionToken>[] basicChecks = TokenUtils.predicates(
                 DefaultActionToken.ACTION_TOKEN_BASIC_CHECKS);
 
-        logger.infof("Magic Link: Applying %d basic check predicates", basicChecks.length);
+        logger.debugf("Magic Link: Applying %d basic check predicates", basicChecks.length);
 
         // Wrap each predicate with logging
         @SuppressWarnings("unchecked")
@@ -69,12 +69,13 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
             final Predicate<? super MagicLinkActionToken> originalPredicate = basicChecks[i];
             wrappedPredicates[i] = (token) -> {
                 try {
-                    logger.infof("Magic Link: Running basic check #%d for token: %s", index, token);
+                    logger.debug(String.format("Magic Link: Running basic check #%d for token: %s", index, token));
                     boolean result = originalPredicate.test(token);
-                    logger.infof("Magic Link: Basic check #%d result: %s", index, result);
+                    logger.debug(String.format("Magic Link: Basic check #%d result: %s", index, result));
                     return result;
                 } catch (Exception e) {
-                    logger.errorf(e, "Magic Link: Basic check #%d failed with exception for token: %s", index, token);
+                    logger.error(String.format("Magic Link: Basic check #%d failed with exception for token: %s",
+                            index, token), e);
                     return false;
                 }
             };
@@ -87,7 +88,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
     public AuthenticationSessionModel startFreshAuthenticationSession(
             MagicLinkActionToken token,
             ActionTokenContext<MagicLinkActionToken> tokenContext) {
-        logger.infof("Magic Link: Starting fresh authentication session for userId=%s, clientId=%s, realm=%s",
+        logger.debugf("Magic Link: Starting fresh authentication session for userId=%s, clientId=%s, realm=%s",
                 token.getUserId(), token.getIssuedFor(), tokenContext.getRealm().getName());
         // Find client by clientId stored in the token
         ClientModel client = tokenContext.getRealm().getClientByClientId(token.getIssuedFor());
@@ -96,7 +97,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                     token.getIssuedFor(), tokenContext.getRealm().getName());
             return null;
         }
-        logger.infof("Magic Link: Creating authentication session for client=%s (id=%s)",
+        logger.debugf("Magic Link: Creating authentication session for client=%s (id=%s)",
                 client.getClientId(), client.getId());
         return tokenContext.createAuthenticationSessionForClient(client.getClientId());
     }
@@ -106,7 +107,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
             MagicLinkActionToken token,
             ActionTokenContext<MagicLinkActionToken> tokenContext) {
         // Magic link tokens are single-use only for security
-        logger.infof("Magic Link: Token is single-use only, userId=%s", token.getUserId());
+        logger.debugf("Magic Link: Token is single-use only, userId=%s", token.getUserId());
         return false;
     }
 
@@ -115,7 +116,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
             MagicLinkActionToken token,
             ActionTokenContext<MagicLinkActionToken> tokenContext) {
 
-        logger.infof(
+        logger.debugf(
                 "Magic Link: handleToken() called - userId=%s, clientId=%s, redirectUri=%s, realm=%s, nonce=%s, compoundAuthSessionId=%s, tokenId=%s, exp=%d, iat=%d",
                 token.getUserId(), token.getIssuedFor(), token.getRedirectUri(),
                 tokenContext.getRealm().getName(),
@@ -143,12 +144,12 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
 
         // Set user as authenticated in the session
         AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
-        logger.infof("Magic Link: Setting authenticated user=%s (email=%s) in session",
+        logger.debugf("Magic Link: Setting authenticated user=%s (email=%s) in session",
                 user.getId(), user.getEmail());
         authSession.setAuthenticatedUser(user);
 
         ClientModel client = authSession.getClient();
-        logger.infof("Magic Link: Using client=%s (id=%s)", client.getClientId(), client.getId());
+        logger.debugf("Magic Link: Using client=%s (id=%s)", client.getClientId(), client.getId());
 
         // Get redirect URI
         String redirectUri = token.getRedirectUri() != null
@@ -158,7 +159,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                         client.getRootUrl(),
                         client.getBaseUrl());
 
-        logger.infof("Magic Link: Redirect URI: %s", redirectUri);
+        logger.debugf("Magic Link: Redirect URI: %s", redirectUri);
 
         // Validate redirect URI
         String redirect = RedirectUtils.verifyRedirectUri(
@@ -167,7 +168,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                 client);
 
         if (redirect != null) {
-            logger.infof("Magic Link: Redirect URI validated successfully: %s", redirect);
+            logger.debugf("Magic Link: Redirect URI validated successfully: %s", redirect);
             authSession.setAuthNote(
                     AuthenticationManager.SET_REDIRECT_URI_AFTER_REQUIRED_ACTIONS,
                     "true");
@@ -194,7 +195,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                     tokenContext.getRequest(),
                     tokenContext.getEvent());
 
-            logger.infof("Magic Link: Redirecting to required actions. nextAction=%s, user=%s",
+            logger.debugf("Magic Link: Redirecting to required actions. nextAction=%s, user=%s",
                     nextAction != null ? nextAction : "none", user.getId());
 
             return AuthenticationManager.redirectToRequiredActions(

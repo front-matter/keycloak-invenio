@@ -125,7 +125,7 @@ public class MagicLinkAuthenticator implements Authenticator {
     String authSessionId = context.getAuthenticationSession().getParentSession().getId() +
         "." + context.getAuthenticationSession().getTabId();
 
-    org.jboss.logging.Logger.getLogger(getClass()).infof(
+    org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, authSessionId=%s, validitySecs=%d, absoluteExp=%d",
         user.getId(), clientId, redirectUri, authSessionId, validityInSecs, absoluteExpirationInSecs);
 
@@ -137,7 +137,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         rememberMe,
         authSessionId);
 
-    org.jboss.logging.Logger.getLogger(getClass()).infof(
+    org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",
         token.getId(), token.getActionVerificationNonce(), token.getType());
 
@@ -147,7 +147,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         context.getRealm(),
         uriInfo);
 
-    org.jboss.logging.Logger.getLogger(getClass()).infof(
+    org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Token serialized successfully - length=%d, userId=%s, tokenStringPrefix=%s",
         tokenString != null ? tokenString.length() : 0, user.getId(),
         tokenString != null && tokenString.length() > 50 ? tokenString.substring(0, 50) : tokenString);
@@ -159,7 +159,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         .queryParam("client_id", clientId);
 
     String link = builder.build(context.getRealm().getName()).toString();
-    org.jboss.logging.Logger.getLogger(getClass()).infof(
+    org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Link generated - length=%d, userId=%s",
         link.length(), user.getId());
 
