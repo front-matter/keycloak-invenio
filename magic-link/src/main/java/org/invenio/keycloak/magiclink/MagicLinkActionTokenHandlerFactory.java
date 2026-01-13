@@ -25,10 +25,18 @@ public class MagicLinkActionTokenHandlerFactory implements ActionTokenHandlerFac
     return PROVIDER_ID;
   }
 
+  // Required for Keycloak to deserialize tokens to the correct class (called via
+  // reflection)
+  public Class<MagicLinkActionToken> getTokenClass() {
+    logger.infof("Magic Link: getTokenClass() called - returning: %s", MagicLinkActionToken.class.getName());
+    return MagicLinkActionToken.class;
+  }
+
   @Override
   public void init(Config.Scope config) {
-    logger.infof("Magic Link: Handler factory initialized - ID: %s, TokenType: %s, HandlerClass: %s",
-        PROVIDER_ID, MagicLinkActionToken.TOKEN_TYPE, MagicLinkActionTokenHandler.class.getName());
+    logger.infof("Magic Link: Handler factory initialized - ID: %s, TokenType: %s, TokenClass: %s, HandlerClass: %s",
+        PROVIDER_ID, MagicLinkActionToken.TOKEN_TYPE, MagicLinkActionToken.class.getName(),
+        MagicLinkActionTokenHandler.class.getName());
   }
 
   @Override

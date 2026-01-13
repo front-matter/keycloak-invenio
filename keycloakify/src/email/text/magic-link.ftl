@@ -1,5 +1,3 @@
-${msg("magicLinkEmailBody", linkExpiration)}
+${msg("magicLinkEmailBody", linkExpiration)} ${msg("magicLinkSecurity")}
 
 ${link}
-
-${msg("magicLinkSecurity")}

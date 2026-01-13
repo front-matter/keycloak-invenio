@@ -34,6 +34,8 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                 Messages.INVALID_REQUEST,
                 EventType.EXECUTE_ACTION_TOKEN,
                 Errors.INVALID_REQUEST);
+        logger.infof("Magic Link: Handler constructor called - registering for tokenType: %s, tokenClass: %s",
+                MagicLinkActionToken.TOKEN_TYPE, MagicLinkActionToken.class.getName());
     }
 
     @Override

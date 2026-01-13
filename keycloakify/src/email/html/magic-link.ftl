@@ -9,10 +9,6 @@
     </p>
     
     <p style="margin-top: 20px; font-size: 14px; color: #333333;">
-        ${msg("magicLinkExpiration", linkExpiration)}
-    </p>
-    
-    <p style="margin-top: 20px; font-size: 14px; color: #333333;">
-        ${msg("magicLinkSecurity")}
+        ${msg("magicLinkExpiration", linkExpiration)} ${msg("magicLinkSecurity")}
     </p>
 </@layout.emailLayout>
