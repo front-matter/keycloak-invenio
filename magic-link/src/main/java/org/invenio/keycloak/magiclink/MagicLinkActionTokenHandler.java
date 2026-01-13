@@ -39,15 +39,24 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
     @Override
     public Predicate<? super MagicLinkActionToken>[] getVerifiers(
             ActionTokenContext<MagicLinkActionToken> tokenContext) {
-        logger.infof("Magic Link: Starting token verification for user=%s, tokenId=%s, realm=%s",
-                tokenContext.getAuthenticationSession() != null
-                        && tokenContext.getAuthenticationSession().getAuthenticatedUser() != null
-                                ? tokenContext.getAuthenticationSession().getAuthenticatedUser().getId()
-                                : "unknown",
-                "pending",
+        logger.infof("Magic Link: getVerifiers() called - realm=%s",
                 tokenContext.getRealm().getName());
-        return TokenUtils.predicates(
+
+        AuthenticationSessionModel authSession = tokenContext.getAuthenticationSession();
+        if (authSession != null) {
+            logger.infof("Magic Link: Current auth session - sessionId=%s.%s, client=%s, user=%s",
+                    authSession.getParentSession() != null ? authSession.getParentSession().getId() : "null",
+                    authSession.getTabId(),
+                    authSession.getClient() != null ? authSession.getClient().getClientId() : "null",
+                    authSession.getAuthenticatedUser() != null ? authSession.getAuthenticatedUser().getId() : "null");
+        } else {
+            logger.warn("Magic Link: No authentication session found in token context");
+        }
+
+        Predicate<? super MagicLinkActionToken>[] predicates = TokenUtils.predicates(
                 DefaultActionToken.ACTION_TOKEN_BASIC_CHECKS);
+        logger.infof("Magic Link: Returning %d verifier predicates", predicates.length);
+        return predicates;
     }
 
     @Override
@@ -83,11 +92,14 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
             ActionTokenContext<MagicLinkActionToken> tokenContext) {
 
         logger.infof(
-                "Magic Link: Handling token for userId=%s, clientId=%s, redirectUri=%s, realm=%s, nonce=%s, compoundAuthSessionId=%s",
+                "Magic Link: handleToken() called - userId=%s, clientId=%s, redirectUri=%s, realm=%s, nonce=%s, compoundAuthSessionId=%s, tokenId=%s, exp=%d, iat=%d",
                 token.getUserId(), token.getIssuedFor(), token.getRedirectUri(),
                 tokenContext.getRealm().getName(),
                 token.getActionVerificationNonce(),
-                token.getCompoundAuthenticationSessionId());
+                token.getCompoundAuthenticationSessionId(),
+                token.getId(),
+                token.getExp() != null ? token.getExp() : -1,
+                token.getIat() != null ? token.getIat() : -1);
 
         // Get user from token (not from session, as they're not authenticated yet)
         UserModel user = tokenContext.getSession().users().getUserById(

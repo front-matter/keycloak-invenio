@@ -125,6 +125,10 @@ public class MagicLinkAuthenticator implements Authenticator {
     String authSessionId = context.getAuthenticationSession().getParentSession().getId() +
         "." + context.getAuthenticationSession().getTabId();
 
+    org.jboss.logging.Logger.getLogger(getClass()).infof(
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, authSessionId=%s, validitySecs=%d, absoluteExp=%d",
+        user.getId(), clientId, redirectUri, authSessionId, validityInSecs, absoluteExpirationInSecs);
+
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
         absoluteExpirationInSecs,
@@ -133,11 +137,19 @@ public class MagicLinkAuthenticator implements Authenticator {
         rememberMe,
         authSessionId);
 
+    org.jboss.logging.Logger.getLogger(getClass()).infof(
+        "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s",
+        token.getId(), token.getActionVerificationNonce());
+
     UriInfo uriInfo = context.getSession().getContext().getUri();
     String tokenString = token.serialize(
         context.getSession(),
         context.getRealm(),
         uriInfo);
+
+    org.jboss.logging.Logger.getLogger(getClass()).infof(
+        "Magic Link: Token serialized successfully - length=%d, userId=%s",
+        tokenString != null ? tokenString.length() : 0, user.getId());
 
     UriBuilder builder = Urls.realmBase(uriInfo.getBaseUri())
         .path(RealmsResource.class, "getLoginActionsService")
@@ -145,7 +157,12 @@ public class MagicLinkAuthenticator implements Authenticator {
         .queryParam("key", tokenString)
         .queryParam("client_id", clientId);
 
-    return builder.build(context.getRealm().getName()).toString();
+    String link = builder.build(context.getRealm().getName()).toString();
+    org.jboss.logging.Logger.getLogger(getClass()).infof(
+        "Magic Link: Link generated - length=%d, userId=%s",
+        link.length(), user.getId());
+
+    return link;
   }
 
   protected void sendMagicLinkEmail(AuthenticationFlowContext context, UserModel user, String link)

@@ -1,12 +1,15 @@
 package org.invenio.keycloak.magiclink;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jboss.logging.Logger;
 import org.keycloak.authentication.actiontoken.DefaultActionToken;
 
 /**
  * Magic Link Action Token for passwordless authentication
  */
 public class MagicLinkActionToken extends DefaultActionToken {
+
+  private static final Logger logger = Logger.getLogger(MagicLinkActionToken.class);
 
   public static final String TOKEN_TYPE = "magic-link";
 
@@ -30,11 +33,15 @@ public class MagicLinkActionToken extends DefaultActionToken {
     this.redirectUri = redirectUri;
     this.issuedFor = clientId;
     this.rememberMe = rememberMe;
+    logger.infof("Magic Link Token: Created token - userId=%s, clientId=%s, expiration=%d, authSessionId=%s, nonce=%s",
+        userId, clientId, absoluteExpirationInSecs, compoundAuthenticationSessionId,
+        this.getActionVerificationNonce() != null ? this.getActionVerificationNonce().toString() : "null");
   }
 
   // Required for Jackson deserialization
   public MagicLinkActionToken() {
     super();
+    logger.info("Magic Link Token: No-arg constructor called (Jackson deserialization)");
   }
 
   public String getRedirectUri() {
