@@ -35,7 +35,12 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
   public AuthenticationSessionModel startFreshAuthenticationSession(
       MagicLinkActionToken token,
       ActionTokenContext<MagicLinkActionToken> tokenContext) {
-    return tokenContext.createAuthenticationSessionForClient(token.getIssuedFor());
+    // Find client by clientId stored in the token
+    ClientModel client = tokenContext.getRealm().getClientByClientId(token.getIssuedFor());
+    if (client == null) {
+      return null;
+    }
+    return tokenContext.createAuthenticationSessionForClient(client.getId());
   }
 
   @Override
