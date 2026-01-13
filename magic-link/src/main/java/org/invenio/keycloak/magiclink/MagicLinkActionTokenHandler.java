@@ -98,7 +98,7 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
         }
         logger.infof("Magic Link: Creating authentication session for client=%s (id=%s)",
                 client.getClientId(), client.getId());
-        return tokenContext.createAuthenticationSessionForClient(client.getId());
+        return tokenContext.createAuthenticationSessionForClient(client.getClientId());
     }
 
     @Override
