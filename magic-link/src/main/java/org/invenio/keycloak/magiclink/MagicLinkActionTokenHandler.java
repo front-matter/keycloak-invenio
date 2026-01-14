@@ -19,6 +19,8 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.util.ResolveRelative;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
+import java.util.Map;
+
 /**
  * Handles the magic link action token by logging the user in and redirecting
  */
@@ -97,24 +99,36 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                     token.getIssuedFor(), tokenContext.getRealm().getName());
             return null;
         }
-        logger.debugf("Magic Link: Creating authentication session for client=%s (id=%s), redirectUri=%s",
-                client.getClientId(), client.getId(), token.getRedirectUri());
+        logger.debugf(
+                "Magic Link: Creating authentication session for client=%s (id=%s), redirectUri=%s, clientNotes=%d",
+                client.getClientId(), client.getId(), token.getRedirectUri(),
+                token.getClientNotes() != null ? token.getClientNotes().size() : 0);
 
         AuthenticationSessionModel authSession = tokenContext
                 .createAuthenticationSessionForClient(client.getClientId());
 
-        // Set redirect URI from token if available
-        if (authSession != null && token.getRedirectUri() != null) {
-            String validatedRedirect = RedirectUtils.verifyRedirectUri(
-                    tokenContext.getSession(),
-                    token.getRedirectUri(),
-                    client);
-            if (validatedRedirect != null) {
-                authSession.setRedirectUri(validatedRedirect);
-                authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, token.getRedirectUri());
-                logger.debugf("Magic Link: Set redirect URI in fresh session: %s", validatedRedirect);
-            } else {
-                logger.warnf("Magic Link: Redirect URI validation failed: %s", token.getRedirectUri());
+        if (authSession != null) {
+            // Restore all client notes from token (includes OIDC state, nonce, etc.)
+            if (token.getClientNotes() != null && !token.getClientNotes().isEmpty()) {
+                for (Map.Entry<String, String> entry : token.getClientNotes().entrySet()) {
+                    authSession.setClientNote(entry.getKey(), entry.getValue());
+                    logger.debugf("Magic Link: Restored client note: %s", entry.getKey());
+                }
+            }
+
+            // Set redirect URI from token if available
+            if (token.getRedirectUri() != null) {
+                String validatedRedirect = RedirectUtils.verifyRedirectUri(
+                        tokenContext.getSession(),
+                        token.getRedirectUri(),
+                        client);
+                if (validatedRedirect != null) {
+                    authSession.setRedirectUri(validatedRedirect);
+                    authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, token.getRedirectUri());
+                    logger.debugf("Magic Link: Set redirect URI in fresh session: %s", validatedRedirect);
+                } else {
+                    logger.warnf("Magic Link: Redirect URI validation failed: %s", token.getRedirectUri());
+                }
             }
         }
 

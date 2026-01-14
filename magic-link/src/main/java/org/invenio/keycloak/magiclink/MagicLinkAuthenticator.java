@@ -23,6 +23,9 @@ import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.RealmsResource;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -121,13 +124,16 @@ public class MagicLinkAuthenticator implements Authenticator {
     String redirectUri = context.getAuthenticationSession().getRedirectUri();
     Boolean rememberMe = false;
 
+    // Capture all client notes from original session for OIDC flow preservation
+    Map<String, String> clientNotes = new HashMap<>(context.getAuthenticationSession().getClientNotes());
+
     // Don't pass compound session ID - the original auth session may expire before
     // the user clicks the link. Keycloak will create a fresh authentication session
     // when processing the token, using the clientId and redirectUri stored in the
     // token.
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
-        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, validitySecs=%d, absoluteExp=%d",
-        user.getId(), clientId, redirectUri, validityInSecs, absoluteExpirationInSecs);
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, clientNotes=%d, validitySecs=%d, absoluteExp=%d",
+        user.getId(), clientId, redirectUri, clientNotes.size(), validityInSecs, absoluteExpirationInSecs);
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
@@ -135,7 +141,8 @@ public class MagicLinkAuthenticator implements Authenticator {
         clientId,
         redirectUri,
         rememberMe,
-        null); // null = create fresh auth session
+        null, // null = create fresh auth session
+        clientNotes);
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",

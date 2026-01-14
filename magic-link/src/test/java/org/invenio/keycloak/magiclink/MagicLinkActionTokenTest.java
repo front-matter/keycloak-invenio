@@ -22,7 +22,8 @@ class MagicLinkActionTokenTest {
         clientId,
         redirectUri,
         rememberMe,
-        authSessionId);
+        authSessionId,
+        null); // clientNotes
 
     assertEquals(userId, token.getUserId());
     assertEquals(clientId, token.getIssuedFor());
@@ -45,7 +46,8 @@ class MagicLinkActionTokenTest {
         clientId,
         redirectUri,
         null,
-        authSessionId);
+        authSessionId,
+        null); // clientNotes
 
     assertNotNull(token);
     assertEquals(userId, token.getUserId());
@@ -60,7 +62,8 @@ class MagicLinkActionTokenTest {
         "client",
         "https://redirect.com",
         false,
-        "session-123.tab-456");
+        "session-123.tab-456",
+        null); // clientNotes
 
     token.setRedirectUri("https://new-redirect.com");
     assertEquals("https://new-redirect.com", token.getRedirectUri());
