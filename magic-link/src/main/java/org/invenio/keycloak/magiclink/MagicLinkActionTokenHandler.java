@@ -97,9 +97,28 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                     token.getIssuedFor(), tokenContext.getRealm().getName());
             return null;
         }
-        logger.debugf("Magic Link: Creating authentication session for client=%s (id=%s)",
-                client.getClientId(), client.getId());
-        return tokenContext.createAuthenticationSessionForClient(client.getClientId());
+        logger.debugf("Magic Link: Creating authentication session for client=%s (id=%s), redirectUri=%s",
+                client.getClientId(), client.getId(), token.getRedirectUri());
+
+        AuthenticationSessionModel authSession = tokenContext
+                .createAuthenticationSessionForClient(client.getClientId());
+
+        // Set redirect URI from token if available
+        if (authSession != null && token.getRedirectUri() != null) {
+            String validatedRedirect = RedirectUtils.verifyRedirectUri(
+                    tokenContext.getSession(),
+                    token.getRedirectUri(),
+                    client);
+            if (validatedRedirect != null) {
+                authSession.setRedirectUri(validatedRedirect);
+                authSession.setClientNote(OIDCLoginProtocol.REDIRECT_URI_PARAM, token.getRedirectUri());
+                logger.debugf("Magic Link: Set redirect URI in fresh session: %s", validatedRedirect);
+            } else {
+                logger.warnf("Magic Link: Redirect URI validation failed: %s", token.getRedirectUri());
+            }
+        }
+
+        return authSession;
     }
 
     @Override

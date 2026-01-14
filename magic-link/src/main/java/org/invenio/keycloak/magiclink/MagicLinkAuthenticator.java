@@ -121,22 +121,13 @@ public class MagicLinkAuthenticator implements Authenticator {
     String redirectUri = context.getAuthenticationSession().getRedirectUri();
     Boolean rememberMe = false;
 
-    // Get compound authentication session ID to preserve OIDC context
-    String authSessionId = null;
-    if (context.getAuthenticationSession() != null
-        && context.getAuthenticationSession().getParentSession() != null) {
-      authSessionId = context.getAuthenticationSession().getParentSession().getId()
-          + "." + context.getAuthenticationSession().getTabId();
-      org.jboss.logging.Logger.getLogger(getClass()).debugf(
-          "Magic Link: Using auth session ID: %s", authSessionId);
-    } else {
-      org.jboss.logging.Logger.getLogger(getClass()).warn(
-          "Magic Link: No parent session found - proceeding without session ID");
-    }
-
+    // Don't pass compound session ID - the original auth session may expire before
+    // the user clicks the link. Keycloak will create a fresh authentication session
+    // when processing the token, using the clientId and redirectUri stored in the
+    // token.
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
-        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, authSessionId=%s, validitySecs=%d, absoluteExp=%d",
-        user.getId(), clientId, redirectUri, authSessionId, validityInSecs, absoluteExpirationInSecs);
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, validitySecs=%d, absoluteExp=%d",
+        user.getId(), clientId, redirectUri, validityInSecs, absoluteExpirationInSecs);
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
@@ -144,7 +135,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         clientId,
         redirectUri,
         rememberMe,
-        authSessionId);
+        null); // null = create fresh auth session
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",
