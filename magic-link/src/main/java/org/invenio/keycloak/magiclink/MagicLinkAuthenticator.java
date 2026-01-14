@@ -121,19 +121,15 @@ public class MagicLinkAuthenticator implements Authenticator {
     String redirectUri = context.getAuthenticationSession().getRedirectUri();
     Boolean rememberMe = false;
 
-    // Get authentication session ID - handle null parent session
-    String authSessionId = null;
-    if (context.getAuthenticationSession().getParentSession() != null) {
-      authSessionId = context.getAuthenticationSession().getParentSession().getId() +
-          "." + context.getAuthenticationSession().getTabId();
-    } else {
-      org.jboss.logging.Logger.getLogger(getClass()).warn(
-          "Magic Link: Parent session is null, proceeding without compound auth session ID");
-    }
+    // Note: We don't pass compoundAuthenticationSessionId because Magic Links are
+    // asynchronous - the original session will likely be expired when the link is
+    // clicked.
+    // Keycloak will create a fresh authentication session when processing the
+    // token.
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
-        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, authSessionId=%s, validitySecs=%d, absoluteExp=%d",
-        user.getId(), clientId, redirectUri, authSessionId, validityInSecs, absoluteExpirationInSecs);
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, validitySecs=%d, absoluteExp=%d",
+        user.getId(), clientId, redirectUri, validityInSecs, absoluteExpirationInSecs);
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
@@ -141,7 +137,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         clientId,
         redirectUri,
         rememberMe,
-        authSessionId);
+        null); // No compound session ID - Magic Links are asynchronous
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",
