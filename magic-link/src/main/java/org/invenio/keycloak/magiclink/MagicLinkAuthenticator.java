@@ -121,15 +121,22 @@ public class MagicLinkAuthenticator implements Authenticator {
     String redirectUri = context.getAuthenticationSession().getRedirectUri();
     Boolean rememberMe = false;
 
-    // Note: We don't pass compoundAuthenticationSessionId because Magic Links are
-    // asynchronous - the original session will likely be expired when the link is
-    // clicked.
-    // Keycloak will create a fresh authentication session when processing the
-    // token.
+    // Get compound authentication session ID to preserve OIDC context
+    String authSessionId = null;
+    if (context.getAuthenticationSession() != null
+        && context.getAuthenticationSession().getParentSession() != null) {
+      authSessionId = context.getAuthenticationSession().getParentSession().getId()
+          + "." + context.getAuthenticationSession().getTabId();
+      org.jboss.logging.Logger.getLogger(getClass()).debugf(
+          "Magic Link: Using auth session ID: %s", authSessionId);
+    } else {
+      org.jboss.logging.Logger.getLogger(getClass()).warn(
+          "Magic Link: No parent session found - proceeding without session ID");
+    }
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
-        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, validitySecs=%d, absoluteExp=%d",
-        user.getId(), clientId, redirectUri, validityInSecs, absoluteExpirationInSecs);
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, authSessionId=%s, validitySecs=%d, absoluteExp=%d",
+        user.getId(), clientId, redirectUri, authSessionId, validityInSecs, absoluteExpirationInSecs);
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
@@ -137,7 +144,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         clientId,
         redirectUri,
         rememberMe,
-        null); // No compound session ID - Magic Links are asynchronous
+        authSessionId);
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",
