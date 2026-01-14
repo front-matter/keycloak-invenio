@@ -121,9 +121,15 @@ public class MagicLinkAuthenticator implements Authenticator {
     String redirectUri = context.getAuthenticationSession().getRedirectUri();
     Boolean rememberMe = false;
 
-    // Get authentication session ID
-    String authSessionId = context.getAuthenticationSession().getParentSession().getId() +
-        "." + context.getAuthenticationSession().getTabId();
+    // Get authentication session ID - handle null parent session
+    String authSessionId = null;
+    if (context.getAuthenticationSession().getParentSession() != null) {
+      authSessionId = context.getAuthenticationSession().getParentSession().getId() +
+          "." + context.getAuthenticationSession().getTabId();
+    } else {
+      org.jboss.logging.Logger.getLogger(getClass()).warn(
+          "Magic Link: Parent session is null, proceeding without compound auth session ID");
+    }
 
     org.jboss.logging.Logger.getLogger(getClass()).debugf(
         "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, authSessionId=%s, validitySecs=%d, absoluteExp=%d",
