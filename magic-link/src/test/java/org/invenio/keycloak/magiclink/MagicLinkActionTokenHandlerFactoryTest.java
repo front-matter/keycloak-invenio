@@ -16,7 +16,7 @@ class MagicLinkActionTokenHandlerFactoryTest {
 
   @Test
   void testGetId() {
-    assertEquals("magic-link-token-handler", factory.getId());
+    assertEquals("magic-link", factory.getId());
   }
 
   @Test
