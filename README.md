@@ -147,14 +147,6 @@ Magic Link authentication requires a valid email address. Make sure:
 4. Monitor authentication logs for suspicious activity
 5. Ensure users understand not to share magic links
 
-## Email OTP Two-Factor Authentication
-
-This image also includes the [keycloak-2fa-email-authenticator](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator) extension for email-based one-time password authentication as a second factor.
-
-### Email OTP Configuration
-
-For Email OTP configuration details, see the [keycloak-2fa-email-authenticator documentation](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator).
-
 ## Building from Source
 
 Build the Docker image locally:
