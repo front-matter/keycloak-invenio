@@ -1,6 +1,6 @@
-# Keycloak with ORCID Integration and Email OTP
+# Keycloak with ORCID Integration and Magic Link Authentication
 
-A custom Keycloak Docker image with the [ORCID Identity Provider extension](https://github.com/eosc-kc/keycloak-orcid) and Email OTP (One-Time Password) authenticator pre-installed, designed for use with InvenioRDM and other research data management platforms.
+A custom Keycloak Docker image with the [ORCID Identity Provider extension](https://github.com/eosc-kc/keycloak-orcid) and Magic Link passwordless authenticator pre-installed, designed for use with InvenioRDM and other research data management platforms.
 
 ## Features
 
@@ -8,7 +8,7 @@ A custom Keycloak Docker image with the [ORCID Identity Provider extension](http
 - Pre-installed ORCID Social Identity Provider extension
 - ORCID-specific user attribute mappers
 - ORCID theme with logo support
-- Email OTP two-factor authentication
+- Magic Link passwordless authentication
 - Automatic username generation for ORCID users
 - Automated builds via GitHub Actions
 - Published to GitHub Container Registry
@@ -47,17 +47,17 @@ To use the ORCID theme with the logo:
 2. Set Login Theme to `orcid-theme`
 3. Save changes
 
-## Email OTP Two-Factor Authentication
+## Magic Link Passwordless Authentication
 
-This image includes the [keycloak-2fa-email-authenticator](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator) extension for email-based one-time password authentication.
+This image includes a custom Magic Link authenticator extension for passwordless email-based authentication. Users receive a login link via email that automatically authenticates them when clicked.
 
 ### Prerequisites
 
-The Email OTP extension is built from source during the Docker image build process and is already included in the image.
+The Magic Link extension is built from source during the Docker image build process and is already included in the image.
 
 ### SMTP Configuration
 
-Before Email OTP works, you need to configure your realm's SMTP settings:
+Before Magic Link authentication works, you need to configure your realm's SMTP settings:
 
 1. Log in to Keycloak as admin
 2. Switch to your realm
@@ -77,7 +77,7 @@ Before Email OTP works, you need to configure your realm's SMTP settings:
 
 1. Go to **Authentication** → **Flows**
 2. Click **Create flow**
-3. Enter a name (e.g., "Browser with Email OTP")
+3. Enter a name (e.g., "Browser with Magic Link")
 4. **Top level flow type**: `basic-flow`
 5. Click **Create**
 
@@ -91,13 +91,9 @@ Before Email OTP works, you need to configure your realm's SMTP settings:
 5. Select **Identity Provider Redirector** → **Add**
 6. Set to `ALTERNATIVE`
 
-7. Click **Add sub-flow**
-8. Name: "Forms" or similar
+7. Click **Add execution**
+8. Select **Magic Link Authenticator** → **Add**
 9. Set to `ALTERNATIVE`
-
-10. For the "Forms" sub-flow:
-    - **Add execution** → **Username Password Form** → `REQUIRED`
-    - **Add execution** → **Email OTP** → `REQUIRED`
 
 #### Activate the Flow
 
@@ -105,43 +101,22 @@ Before Email OTP works, you need to configure your realm's SMTP settings:
 2. Select your new flow for **Browser Flow**
 3. Click **Save**
 
-### Email OTP Configuration
+### Magic Link Configuration
 
-Click the ⚙️ (Settings) icon next to **Email OTP** in the authentication flow:
+Click the ⚙️ (Settings) icon next to **Magic Link Authenticator** in the authentication flow:
 
 #### Available Options
 
-- **Code length**: Length of the OTP code (default: 6 digits)
-- **Time-to-live**: Validity of the code in seconds (default: 300 = 5 minutes)
-- **Simulation mode**: For development - emails won't be sent but printed to server logs
-
-### Conditional Email OTP (Optional)
-
-If you need more control, you can use **Conditional Email OTP**:
-
-#### Additional Configuration Options
-
-- **OTP control User Attribute**: User attribute to control OTP (values: `force`, `skip`)
-- **Skip OTP for Role**: OTP is skipped if user has this role
-- **Force OTP for Role**: OTP is always required if user has this role
-- **Skip OTP for Header**: Skip OTP based on HTTP header pattern (e.g., trusted IP addresses)
-- **Force OTP for Header**: Force OTP based on HTTP header pattern
-- **Fallback OTP handling**: Default behavior (`skip` or `force`)
-
-#### Example: OTP Only for External Access
-
-```
-Skip OTP for Header: X-Forwarded-Host: (192.168.1.*|10.0.0.*)
-Fallback OTP handling: force
-```
+- **Link validity**: How long the magic link remains valid (default: 900 seconds = 15 minutes)
+- **Create user if not exists**: Automatically create users who don't have an account (default: disabled)
 
 ### Testing
 
-1. Create a test user with a valid email address
-2. Log in
-3. After successful password entry, you should receive an OTP code via email
-4. Enter the code on the next page
-5. You have 5 minutes (or your configured TTL value)
+1. Go to your application's login page
+2. Enter an email address
+3. Check your email inbox for the magic link
+4. Click the link in the email
+5. You will be automatically logged in
 
 ### Troubleshooting
 
@@ -149,38 +124,35 @@ Fallback OTP handling: force
 
 - Verify SMTP configuration in **Realm settings** → **Email**
 - Test the connection with the **Test connection** button
-- Temporarily enable **Simulation mode** and check Keycloak logs
+- Check Keycloak server logs for any email errors
 
-#### Enable Required Action
+#### Link Expired or Invalid
 
-The Email OTP authenticator sets a Required Action (`email-authenticator-setup`) for users who haven't been configured yet.
-
-If this Required Action is disabled, login may fail with **"Credential setup required"**.
-
-**Authentication → Required actions:**
-1. Find **"Set up Email Authenticator"**
-2. Set **Enabled** = **ON**
-
-#### Code Invalid or Expired
-
-- Check the **Time-to-live** setting
+- Check the **Link validity** setting (default: 15 minutes)
 - Ensure server and client system times are synchronized
-- Use the **Resend code** button if available
+- Request a new magic link
 
 #### User Has No Email Address
 
-Email OTP requires a valid email address in the user profile. Make sure:
+Magic Link authentication requires a valid email address. Make sure:
 - Email address is entered in the user profile
-- Email address is verified (optional but recommended)
+- Email address format is valid
 
 ### Security Recommendations
 
-1. Use sufficient **Code length** (minimum 6 digits)
-2. Set appropriate **Time-to-live** (300-600 seconds)
-3. Enable **SMTP Authentication** and use TLS/SSL
-4. Combine Email OTP with other factors for enhanced security
-5. Monitor failed OTP attempts in Keycloak logs
-6. Use **Conditional Email OTP** to differentiate based on roles or network access
+1. Set appropriate **Link validity** duration (15-30 minutes recommended)
+2. Enable **SMTP Authentication** and use TLS/SSL
+3. Consider combining Magic Link with other authentication methods for sensitive operations
+4. Monitor authentication logs for suspicious activity
+5. Ensure users understand not to share magic links
+
+## Email OTP Two-Factor Authentication
+
+This image also includes the [keycloak-2fa-email-authenticator](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator) extension for email-based one-time password authentication as a second factor.
+
+### Email OTP Configuration
+
+For Email OTP configuration details, see the [keycloak-2fa-email-authenticator documentation](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator).
 
 ## Building from Source
 
@@ -216,6 +188,12 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 - **Version**: 1.4.0
 - **Source**: [eosc-kc/keycloak-orcid](https://github.com/eosc-kc/keycloak-orcid)
 - **Compatibility**: Keycloak 25.0.0+
+
+## Magic Link Extension Details
+
+- **Built from**: Source (included in this repository)
+- **Compatibility**: Keycloak 26.4+
+- **Features**: Passwordless authentication via email links
 
 ## Email OTP Extension Details
 
