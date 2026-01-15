@@ -195,12 +195,6 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 - **Compatibility**: Keycloak 26.4+
 - **Features**: Passwordless authentication via email links
 
-## Email OTP Extension Details
-
-- **Source**: [mesutpiskin/keycloak-2fa-email-authenticator](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator)
-- **Built from**: Main branch (built during Docker image creation)
-- **Compatibility**: Keycloak 26.x
-
 ## References
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
