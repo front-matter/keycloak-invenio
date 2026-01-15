@@ -1,6 +1,6 @@
 # Keycloak with ORCID Integration and Magic Link Authentication
 
-A custom Keycloak Docker image with the [ORCID Identity Provider extension](https://github.com/eosc-kc/keycloak-orcid) and Magic Link passwordless authenticator pre-installed, designed for use with InvenioRDM and other research data management platforms.
+A custom Keycloak Docker image with the [ORCID Identity Provider extension](https://github.com/eosc-kc/keycloak-orcid), Magic Link passwordless authenticator, and Automatic Username Generation extension pre-installed, designed for use with InvenioRDM and other research data management platforms.
 
 ## Features
 
@@ -9,7 +9,8 @@ A custom Keycloak Docker image with the [ORCID Identity Provider extension](http
 - ORCID-specific user attribute mappers
 - ORCID theme with logo support
 - Magic Link passwordless authentication
-- Automatic username generation for ORCID users
+- Automatic username generation for new users
+- Custom theme built with Keycloakify
 - Automated builds via GitHub Actions
 - Published to GitHub Container Registry
 
@@ -195,6 +196,12 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 - **Compatibility**: Keycloak 26.4+
 - **Features**: Passwordless authentication via email links
 
+## Auto-Username Extension Details
+
+- **Built from**: Source (included in this repository)
+- **Compatibility**: Keycloak 26.4+
+- **Features**: Automatic username generation for new users
+
 ## References
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
@@ -205,7 +212,6 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 
 - Keycloak: Apache License 2.0
 - ORCID Extension: See [extension license](https://github.com/eosc-kc/keycloak-orcid/blob/main/LICENCE)
-- Email OTP Extension: Apache License 2.0
 - This repository: MIT License
 
 ## Support
@@ -213,5 +219,4 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 For issues related to:
 - This Docker image: Open an issue in this repository
 - ORCID extension: Visit [eosc-kc/keycloak-orcid](https://github.com/eosc-kc/keycloak-orcid/issues)
-- Email OTP extension: Visit [mesutpiskin/keycloak-2fa-email-authenticator](https://github.com/mesutpiskin/keycloak-2fa-email-authenticator/issues)
 - Keycloak itself: Visit [Keycloak documentation](https://www.keycloak.org/documentation)
