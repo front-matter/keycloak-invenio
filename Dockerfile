@@ -14,14 +14,14 @@ RUN cd auto-username && mvn clean package -DskipTests
 COPY magic-link/ ./magic-link/
 RUN cd magic-link && mvn clean package -DskipTests
 
-# Clone and build keycloak-orcid with Keycloak 26.4 compatibility patch
+# Clone and build keycloak-orcid with Keycloak 26.5 compatibility patch
 RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid.git && \
   cd keycloak-orcid && \
-  sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.4+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
+  sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
   mvn clean package -DskipTests
 
 # Final stage
-FROM quay.io/keycloak/keycloak:26.4
+FROM quay.io/keycloak/keycloak:26.5
 
 # Copy keycloak-orcid from builder
 COPY --from=builder /build/keycloak-orcid/target/keycloak-orcid.jar /opt/keycloak/providers/
