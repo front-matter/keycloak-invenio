@@ -51,17 +51,11 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
         return null;
     }
 
-    // Read logo name from realm attributes (can be set via KC_LOGO_NAME env var in Keycloak)
-    // Falls back to logo-front-matter.svg for both production and Storybook
-    const logoName = (realm.attributes?.logoName as string | undefined) || "logo-front-matter.svg";
-    const baseUrl = import.meta.env.BASE_URL || "/";
-
     return (
         <div className={kcClsx("kcLoginClass")}>
             <div id="kc-header" className={kcClsx("kcHeaderClass")}>
                 <div id="kc-header-wrapper" className={kcClsx("kcHeaderWrapperClass")}>
-                    {/*{msg("loginTitleHtml", realm.displayNameHtml)}*/}
-                    <img src={`${baseUrl}${logoName}`} width={300} alt="Logo" />
+                    {msg("loginTitleHtml", realm.displayNameHtml)}
                 </div>
             </div>
             <div className={kcClsx("kcFormCardClass")}>
