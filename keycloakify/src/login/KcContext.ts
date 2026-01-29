@@ -14,6 +14,8 @@ export type KcContextExtension = {
     };
 };
 
-export type KcContextExtensionPerPage = {};
+export type KcContextExtensionPerPage = {
+    "magic-link-sent.ftl": {};
+};
 
 export type KcContext = ExtendKcContext<KcContextExtension, KcContextExtensionPerPage>;
