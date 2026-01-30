@@ -10,12 +10,50 @@ const KcPageLazy = lazy(async () => {
 function getSafeKcContextDiagnostics() {
     const kcContext = (window as any).kcContext as any;
 
+    const safeLocation = (() => {
+        try {
+            const url = new URL(window.location.href);
+
+            const redactedKeys = new Set([
+                "session_code",
+                "code",
+                "access_token",
+                "refresh_token",
+                "id_token",
+                "token",
+                "client_data",
+                "kcContext",
+                "state"
+            ]);
+
+            url.searchParams.forEach((value, key) => {
+                if (redactedKeys.has(key) || value.length > 100) {
+                    url.searchParams.set(key, "<redacted>");
+                }
+            });
+
+            return {
+                origin: url.origin,
+                pathname: url.pathname,
+                search: url.search,
+                hash: url.hash,
+                referrer: document.referrer || undefined
+            };
+        } catch {
+            return {
+                pathname: window.location.pathname,
+                referrer: document.referrer || undefined
+            };
+        }
+    })();
+
     if (!kcContext || typeof kcContext !== "object") {
         return { hasKcContext: false as const };
     }
 
     return {
         hasKcContext: true as const,
+        location: safeLocation,
         pageId: kcContext.pageId,
         hasRealm: Boolean(kcContext.realm),
         hasLocale: Boolean(kcContext.locale),
