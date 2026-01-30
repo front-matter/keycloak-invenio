@@ -34,7 +34,26 @@
       "publicClient": true,
       "redirectUris": ["${env.INVENIO_URL:http://localhost:3000}/*"],
       "webOrigins": ["${env.INVENIO_URL:http://localhost:3000}"],
-      "protocol": "openid-connect"
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "gravatar-picture",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-gravatar-picture-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "picture",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "gravatar.size": "200",
+            "gravatar.default": "mp",
+            "gravatar.rating": "g"
+          }
+        }
+      ]
     }
   ]
 }

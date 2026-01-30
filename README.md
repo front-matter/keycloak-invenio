@@ -194,6 +194,28 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 - **Compatibility**: Keycloak 26.4+
 - **Features**: Automatic username generation for new users
 
+## Avatar (Gravatar) for Clients
+
+This image includes an OIDC protocol mapper that computes a Gravatar URL from the user's email address and exposes it as the standard OIDC claim `picture`.
+
+### What clients receive
+
+- `picture`: A URL like `https://www.gravatar.com/avatar/<md5>?s=200&d=mp&r=g`
+- Included in: **ID Token**, **Access Token**, and **UserInfo** response for the `invenio-app` client (via [realm-config.json](realm-config.json)).
+
+### How to use it in a client
+
+- From the ID token: read the `picture` field after login.
+- From UserInfo: call the OIDC userinfo endpoint (e.g. `GET /realms/<realm>/protocol/openid-connect/userinfo`) with the access token and read `picture`.
+
+### Admin Console alternative
+
+If you don't use realm import, you can add it manually:
+
+1. Admin Console → **Clients** → your client → **Client scopes** / **Protocol mappers**
+2. Add mapper of type **Gravatar picture**
+3. Keep claim name `picture` and enable inclusion for the tokens you need
+
 ## References
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
