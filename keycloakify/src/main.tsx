@@ -2,6 +2,56 @@ import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
 import { KcPage } from "./kc.gen";
 
+function getSafeKcContextDiagnostics() {
+    const kcContext = (window as any).kcContext as any;
+
+    if (!kcContext || typeof kcContext !== "object") {
+        return { hasKcContext: false as const };
+    }
+
+    return {
+        hasKcContext: true as const,
+        pageId: kcContext.pageId,
+        hasRealm: Boolean(kcContext.realm),
+        hasLocale: Boolean(kcContext.locale),
+        realmName: kcContext.realm?.name,
+        clientId: kcContext.client?.clientId,
+        messageSummary: kcContext.message?.summary,
+        messageType: kcContext.message?.type,
+        statusCode: kcContext.statusCode,
+        kcContextKeys: Object.keys(kcContext).sort()
+    };
+}
+
+function PreflightErrorView(props: { title: string; details?: unknown }) {
+    const diagnostics = getSafeKcContextDiagnostics();
+
+    const message = `${props.title}\n\n${JSON.stringify(
+        {
+            details: props.details,
+            diagnostics
+        },
+        null,
+        2
+    )}`;
+
+    return (
+        <pre
+            style={{
+                whiteSpace: "pre-wrap",
+                fontFamily:
+                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+                padding: 16,
+                margin: 16,
+                border: "1px solid #ccc",
+                borderRadius: 8
+            }}
+        >
+            {message}
+        </pre>
+    );
+}
+
 function renderFatalError(title: string, error: unknown) {
     const root = document.getElementById("root");
 
@@ -18,7 +68,11 @@ function renderFatalError(title: string, error: unknown) {
             realmName: kcContext.realm?.name,
             clientId: kcContext.client?.clientId,
             hasRealm: Boolean(kcContext.realm),
-            hasLocale: Boolean(kcContext.locale)
+            hasLocale: Boolean(kcContext.locale),
+            messageSummary: kcContext.message?.summary,
+            messageType: kcContext.message?.type,
+            statusCode: kcContext.statusCode,
+            kcContextKeys: Object.keys(kcContext).sort()
         };
     })();
 
@@ -87,6 +141,13 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
         {!window.kcContext ? (
             <h1>No Keycloak Context</h1>
+        ) : !(window.kcContext as any).realm ? (
+            <PreflightErrorView
+                title="Keycloak context is missing 'realm' (theme cannot render this page)"
+                details={{
+                    hint: "This often happens on error pages like error.ftl; the theme should still provide realm."
+                }}
+            />
         ) : (
             <KcPage kcContext={window.kcContext} />
         )}
