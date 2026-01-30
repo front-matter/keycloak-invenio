@@ -207,14 +207,21 @@ public class MagicLinkAuthenticator implements Authenticator {
   }
 
   private void showEmailSentPage(AuthenticationFlowContext context) {
-    // Show a user-friendly "email sent" page.
-    // Note: This keeps the auth session open, but the UI tells users they can close
-    // the window.
-    // The magic link will create a fresh auth session when clicked (see
-    // MagicLinkActionTokenHandler).
-    Response challenge = context.form()
-        .createForm("magic-link-sent.ftl");
-    context.forceChallenge(challenge);
+    // For OAuth flows, we need to properly terminate the authorization request.
+    // Since magic link auth is asynchronous (user must click email), we can't
+    // complete
+    // the current OAuth flow. Instead, we return an error response that redirects
+    // back
+    // to the client application with an error message.
+    // When the user clicks the magic link, a NEW auth session is created and
+    // succeeds.
+
+    context.getEvent().error("magic_link_sent");
+    Response response = context.form()
+        .setError(
+            "A login link has been sent to your email. Please check your inbox and click the link to continue. You can close this window.")
+        .createErrorPage(Response.Status.UNAUTHORIZED);
+    context.failure(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR, response);
   }
 
   private boolean shouldCreateUser(AuthenticationFlowContext context) {
