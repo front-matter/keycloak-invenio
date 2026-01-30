@@ -20,3 +20,54 @@ body.kcBodyClass {
   margin-bottom: 0.5rem;
   margin-right: 0.5rem;
 }
+
+/*
+ * Ensure inputs have a border on all four sides across all login pages.
+ * Keycloak's default CSS can make borders look "bottom-only" depending on theme.
+ */
+#kc-form input[type="text"],
+#kc-form input[type="email"],
+#kc-form input[type="password"],
+#kc-form input[type="tel"],
+#kc-form input[type="url"],
+#kc-form input[type="number"],
+#kc-form input[type="search"],
+#kc-form input[type="date"],
+#kc-form input[type="datetime-local"],
+#kc-form input[type="month"],
+#kc-form input[type="time"],
+#kc-form input[type="week"],
+#kc-form select,
+#kc-form textarea,
+#kc-form .pf-c-form-control {
+  border: 1px solid rgba(0, 0, 0, 0.28) !important;
+  box-shadow: none;
+}
+
+#kc-form input:focus,
+#kc-form select:focus,
+#kc-form textarea:focus,
+#kc-form .pf-c-form-control:focus {
+  border-color: rgba(59, 130, 246, 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+  outline: none;
+}
+
+/* Password visibility toggle button (eye icon) */
+#kc-form .kcFormPasswordVisibilityButtonClass,
+#kc-form button.kcFormPasswordVisibilityButtonClass {
+  border: 1px solid rgba(0, 0, 0, 0.28) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.28) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+#kc-form .kcFormPasswordVisibilityButtonClass:focus,
+#kc-form .kcFormPasswordVisibilityButtonClass:hover,
+#kc-form button.kcFormPasswordVisibilityButtonClass:focus,
+#kc-form button.kcFormPasswordVisibilityButtonClass:hover {
+  border: 1px solid rgba(0, 0, 0, 0.28) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.28) !important;
+  box-shadow: none;
+  outline: none;
+}
