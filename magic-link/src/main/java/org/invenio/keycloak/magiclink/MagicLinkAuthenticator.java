@@ -93,6 +93,10 @@ public class MagicLinkAuthenticator implements Authenticator {
       context.getAuthenticationSession()
           .setAuthNote(ATTEMPTED_USERNAME, email);
 
+      // Set user in session so the authentication can be completed when they click
+      // the link
+      context.getAuthenticationSession().setAuthNote("MAGIC_LINK_SENT", "true");
+
       showEmailSentPage(context);
     } catch (EmailException e) {
       // Log detailed email error
@@ -203,9 +207,14 @@ public class MagicLinkAuthenticator implements Authenticator {
   }
 
   private void showEmailSentPage(AuthenticationFlowContext context) {
+    // Show custom "email sent" page as the final response.
+    // forceChallenge() sends this as the HTTP response without waiting for further
+    // input.
+    // The magic link creates a fresh auth session when clicked (see
+    // MagicLinkActionTokenHandler).
     Response challenge = context.form()
         .createForm("magic-link-sent.ftl");
-    context.challenge(challenge);
+    context.forceChallenge(challenge);
   }
 
   private boolean shouldCreateUser(AuthenticationFlowContext context) {
