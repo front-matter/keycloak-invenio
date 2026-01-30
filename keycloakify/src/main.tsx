@@ -1,6 +1,11 @@
 import { createRoot } from "react-dom/client";
-import { StrictMode } from "react";
-import { KcPage } from "./kc.gen";
+import { StrictMode, Suspense, lazy } from "react";
+
+const KcPageLazy = lazy(async () => {
+    const { KcPage } = await import("./kc.gen");
+
+    return { default: KcPage };
+});
 
 function getSafeKcContextDiagnostics() {
     const kcContext = (window as any).kcContext as any;
@@ -149,7 +154,9 @@ createRoot(document.getElementById("root")!).render(
                 }}
             />
         ) : (
-            <KcPage kcContext={window.kcContext} />
+            <Suspense fallback={<h1>Loading…</h1>}>
+                <KcPageLazy kcContext={window.kcContext} />
+            </Suspense>
         )}
     </StrictMode>
 );
