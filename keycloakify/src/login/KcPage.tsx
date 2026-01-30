@@ -10,7 +10,9 @@ const UserProfileFormFields = lazy(
     () => import("keycloakify/login/UserProfileFormFields")
 );
 const Login = lazy(() => import("./pages/Login"));
+const LoginUsername = lazy(() => import("./pages/LoginUsername"));
 const MagicLinkSent = lazy(() => import("./pages/MagicLinkSent"));
+const MagicLinkSentMessage = lazy(() => import("./pages/MagicLinkSentMessage"));
 
 const doMakeUserConfirmPassword = true;
 
@@ -19,13 +21,42 @@ export default function KcPage(props: { kcContext: KcContext }) {
 
     const { i18n } = useI18n({ kcContext });
 
+    const messageSummary = kcContext.message?.summary?.toLowerCase() ?? "";
+    const isMagicLinkSentMessage =
+        messageSummary.includes("login link") ||
+        messageSummary.includes("sign-in link") ||
+        messageSummary.includes("anmeldelink") ||
+        messageSummary.includes("magic link");
+
     return (
         <Suspense>
             {(() => {
+                if (
+                    (kcContext.pageId === "info.ftl" ||
+                        kcContext.pageId === "error.ftl") &&
+                    isMagicLinkSentMessage
+                ) {
+                    return (
+                        <MagicLinkSentMessage
+                            {...{ kcContext, i18n, classes }}
+                            Template={Template}
+                            doUseDefaultCss={true}
+                        />
+                    );
+                }
+
                 switch (kcContext.pageId) {
                     case "login.ftl":
                         return (
                             <Login
+                                {...{ kcContext, i18n, classes }}
+                                Template={Template}
+                                doUseDefaultCss={true}
+                            />
+                        );
+                    case "login-username.ftl":
+                        return (
+                            <LoginUsername
                                 {...{ kcContext, i18n, classes }}
                                 Template={Template}
                                 doUseDefaultCss={true}
