@@ -4,16 +4,15 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
+import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.common.util.Time;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
-import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -22,10 +21,9 @@ import org.keycloak.services.Urls;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.RealmsResource;
+import org.keycloak.sessions.AuthenticationSessionModel;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +33,13 @@ import java.util.Map;
  */
 public class MagicLinkAuthenticator implements Authenticator {
 
+  private static final Logger logger = Logger.getLogger(MagicLinkAuthenticator.class);
+
   private static final String ATTEMPTED_USERNAME = "ATTEMPTED_USERNAME";
 
   @Override
   public void authenticate(AuthenticationFlowContext context) {
+    logContextInfo("authenticate", context, null);
     // Show email input form
     Response challenge = context.form().createLoginUsername();
     context.challenge(challenge);
@@ -48,6 +49,14 @@ public class MagicLinkAuthenticator implements Authenticator {
   public void action(AuthenticationFlowContext context) {
     MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
     String email = formData.getFirst("username");
+
+    // Helpful when templates post back (e.g. resend/restart)
+    String restart = formData.getFirst("restart");
+    logger.infof(
+        "Magic Link: action() called - restart=%s, usernamePresent=%s",
+        restart,
+        email != null && !email.trim().isEmpty());
+    logContextInfo("action", context, email);
 
     if (email == null || email.trim().isEmpty()) {
       context.getEvent().error(Errors.USERNAME_MISSING);
@@ -69,8 +78,10 @@ public class MagicLinkAuthenticator implements Authenticator {
     if (user == null) {
       // User doesn't exist - optionally create
       if (shouldCreateUser(context)) {
+        logger.debugf("Magic Link: User not found, auto-create enabled - email=%s", email);
         user = createUser(context, email);
       } else {
+        logger.debugf("Magic Link: User not found, auto-create disabled - email=%s", email);
         // Don't reveal user doesn't exist
         showEmailSentPage(context);
         return;
@@ -80,6 +91,7 @@ public class MagicLinkAuthenticator implements Authenticator {
     // Check if user is enabled
     if (!user.isEnabled()) {
       context.getEvent().user(user).error(Errors.USER_DISABLED);
+      logger.debugf("Magic Link: User disabled - userId=%s, email=%s", user.getId(), email);
       showEmailSentPage(context);
       return;
     }
@@ -96,6 +108,12 @@ public class MagicLinkAuthenticator implements Authenticator {
       // Set user in session so the authentication can be completed when they click
       // the link
       context.getAuthenticationSession().setAuthNote("MAGIC_LINK_SENT", "true");
+
+      logger.debugf(
+          "Magic Link: Email send attempted - userId=%s, clientId=%s, redirectUri=%s",
+          user.getId(),
+          safeClientId(context),
+          safeRedirectUri(context));
 
       showEmailSentPage(context);
     } catch (EmailException e) {
@@ -120,6 +138,100 @@ public class MagicLinkAuthenticator implements Authenticator {
     }
   }
 
+  private static String safeClientId(AuthenticationFlowContext context) {
+    try {
+      return context.getSession().getContext().getClient() != null
+          ? context.getSession().getContext().getClient().getClientId()
+          : "null";
+    } catch (Exception e) {
+      return "unknown";
+    }
+  }
+
+  private static String safeRedirectUri(AuthenticationFlowContext context) {
+    try {
+      return context.getAuthenticationSession() != null ? context.getAuthenticationSession().getRedirectUri() : "null";
+    } catch (Exception e) {
+      return "unknown";
+    }
+  }
+
+  private static void logContext(String phase, AuthenticationFlowContext context, String email) {
+    try {
+      URI requestUri = null;
+      try {
+        if (context != null && context.getSession() != null && context.getSession().getContext() != null) {
+          UriInfo uriInfo = context.getSession().getContext().getUri();
+          requestUri = uriInfo != null ? uriInfo.getRequestUri() : null;
+        }
+      } catch (Exception ignored) {
+        // Best-effort only
+      }
+
+      AuthenticationSessionModel authSession = context != null ? context.getAuthenticationSession() : null;
+
+      String parentSessionId = "null";
+      String tabId = "null";
+      if (authSession != null) {
+        tabId = authSession.getTabId();
+        parentSessionId = authSession.getParentSession() != null ? authSession.getParentSession().getId() : "null";
+      }
+
+      logger.debugf(
+          "Magic Link: %s - requestUri=%s, realm=%s, clientId=%s, redirectUri=%s, authSession=%s.%s, email=%s",
+          phase,
+          requestUri,
+          context.getRealm() != null ? context.getRealm().getName() : "null",
+          safeClientId(context),
+          safeRedirectUri(context),
+          parentSessionId,
+          tabId,
+          email != null ? email : "null");
+    } catch (Exception e) {
+      logger.debugf(e, "Magic Link: %s - failed to log context", phase);
+    }
+  }
+
+  /**
+   * INFO-level flow marker: enough context to correlate in production logs.
+   */
+  private static void logContextInfo(String phase, AuthenticationFlowContext context, String email) {
+    try {
+      URI requestUri = null;
+      try {
+        if (context != null && context.getSession() != null && context.getSession().getContext() != null) {
+          UriInfo uriInfo = context.getSession().getContext().getUri();
+          requestUri = uriInfo != null ? uriInfo.getRequestUri() : null;
+        }
+      } catch (Exception ignored) {
+        // Best-effort only
+      }
+
+      AuthenticationSessionModel authSession = context != null ? context.getAuthenticationSession() : null;
+
+      String parentSessionId = "null";
+      String tabId = "null";
+      if (authSession != null) {
+        tabId = authSession.getTabId();
+        parentSessionId = authSession.getParentSession() != null ? authSession.getParentSession().getId() : "null";
+      }
+
+      logger.infof(
+          "Magic Link: %s - requestUri=%s, realm=%s, clientId=%s, redirectUri=%s, authSession=%s.%s, email=%s",
+          phase,
+          requestUri,
+          context.getRealm() != null ? context.getRealm().getName() : "null",
+          safeClientId(context),
+          safeRedirectUri(context),
+          parentSessionId,
+          tabId,
+          email != null ? email : "null");
+    } catch (Exception e) {
+      // Avoid noisy INFO logs in partially mocked environments; DEBUG has details.
+      logger.debugf(e, "Magic Link: %s - failed to log context", phase);
+    }
+  }
+
   private String generateMagicLink(AuthenticationFlowContext context, UserModel user) {
     int validityInSecs = getTokenValidity(context);
     int absoluteExpirationInSecs = Time.currentTime() + validityInSecs;
@@ -135,7 +247,7 @@ public class MagicLinkAuthenticator implements Authenticator {
     // the user clicks the link. Keycloak will create a fresh authentication session
     // when processing the token, using the clientId and redirectUri stored in the
     // token.
-    org.jboss.logging.Logger.getLogger(getClass()).debugf(
+    logger.debugf(
         "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, clientNotes=%d, validitySecs=%d, absoluteExp=%d",
         user.getId(), clientId, redirectUri, clientNotes.size(), validityInSecs, absoluteExpirationInSecs);
 
@@ -148,7 +260,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         null, // null = create fresh auth session
         clientNotes);
 
-    org.jboss.logging.Logger.getLogger(getClass()).debugf(
+    logger.debugf(
         "Magic Link: Token created, now serializing - tokenId=%s, nonce=%s, tokenType=%s",
         token.getId(), token.getActionVerificationNonce(), token.getType());
 
@@ -158,10 +270,14 @@ public class MagicLinkAuthenticator implements Authenticator {
         context.getRealm(),
         uriInfo);
 
-    org.jboss.logging.Logger.getLogger(getClass()).debugf(
-        "Magic Link: Token serialized successfully - length=%d, userId=%s, tokenStringPrefix=%s",
-        tokenString != null ? tokenString.length() : 0, user.getId(),
-        tokenString != null && tokenString.length() > 50 ? tokenString.substring(0, 50) : tokenString);
+    // Don't log the token itself (it can be used to log in). Log only a small
+    // fingerprint.
+    String tokenFingerprint = tokenString == null ? "null" : Integer.toHexString(tokenString.hashCode());
+    logger.debugf(
+        "Magic Link: Token serialized - length=%d, userId=%s, tokenFingerprint=%s",
+        tokenString != null ? tokenString.length() : 0,
+        user.getId(),
+        tokenFingerprint);
 
     UriBuilder builder = Urls.realmBase(uriInfo.getBaseUri())
         .path(RealmsResource.class, "getLoginActionsService")
@@ -170,7 +286,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         .queryParam("client_id", clientId);
 
     String link = builder.build(context.getRealm().getName()).toString();
-    org.jboss.logging.Logger.getLogger(getClass()).debugf(
+    logger.debugf(
         "Magic Link: Link generated - length=%d, userId=%s",
         link.length(), user.getId());
 
@@ -215,6 +331,11 @@ public class MagicLinkAuthenticator implements Authenticator {
     // to the client application with an error message.
     // When the user clicks the magic link, a NEW auth session is created and
     // succeeds.
+
+    logger.infof(
+        "Magic Link: Terminating current auth flow (async magic link) - clientId=%s, redirectUri=%s",
+        safeClientId(context),
+        safeRedirectUri(context));
 
     context.getEvent().error("magic_link_sent");
     Response response = context.form()
