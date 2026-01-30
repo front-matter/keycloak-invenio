@@ -207,10 +207,10 @@ public class MagicLinkAuthenticator implements Authenticator {
   }
 
   private void showEmailSentPage(AuthenticationFlowContext context) {
-    // Show custom "email sent" page as the final response.
-    // forceChallenge() sends this as the HTTP response without waiting for further
-    // input.
-    // The magic link creates a fresh auth session when clicked (see
+    // Show a user-friendly "email sent" page.
+    // Note: This keeps the auth session open, but the UI tells users they can close
+    // the window.
+    // The magic link will create a fresh auth session when clicked (see
     // MagicLinkActionTokenHandler).
     Response challenge = context.form()
         .createForm("magic-link-sent.ftl");

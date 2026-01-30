@@ -27,17 +27,26 @@
                     </ol>
                 </div>
                 
-                <div style="margin-top: 20px; text-align: center;">
-                    <p style="font-size: 14px; color: #999999;">
-                        ${msg("magicLinkSentNoEmail")}
+                <div style="margin-top: 20px; text-align: center; padding: 15px; background-color: #fff3cd; border-radius: 4px; border: 1px solid #ffc107;">
+                    <p style="font-size: 14px; color: #856404; margin: 0;">
+                        <strong>Important:</strong> You can safely close this window. Click the link in your email to complete the login.
                     </p>
-                    <form id="kc-form-login" action="${url.loginAction}" method="post">
-                        <input type="hidden" name="restart" value="true" />
-                        <button type="submit" class="${properties.kcButtonClass!} ${properties.kcButtonDefaultClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" style="margin-top: 10px;">
-                            ${msg("magicLinkSentResend")}
-                        </button>
-                    </form>
                 </div>
+
+                <script>
+                    // Allow user to close this window/tab after a few seconds
+                    setTimeout(function() {
+                        // Add a close button for convenience
+                        var closeBtn = document.createElement('button');
+                        closeBtn.innerHTML = 'Close this window';
+                        closeBtn.className = '${properties.kcButtonClass!} ${properties.kcButtonSecondaryClass!}';
+                        closeBtn.style.marginTop = '20px';
+                        closeBtn.onclick = function() {
+                            window.close();
+                        };
+                        document.getElementById('kc-form-wrapper').appendChild(closeBtn);
+                    }, 3000);
+                </script>
             </div>
         </div>
     </#if>
