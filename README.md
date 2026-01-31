@@ -210,11 +210,33 @@ This image includes an OIDC protocol mapper that computes a Gravatar URL from th
 
 ### Admin Console alternative
 
-If you don't use realm import, you can add it manually:
+If you don't use realm import, configure it via the Admin Console using a **Client Scope** and attach it as a **default scope**.
 
-1. Admin Console → **Clients** → your client → **Client scopes** / **Protocol mappers**
-2. Add mapper of type **Gravatar picture**
-3. Keep claim name `picture` and enable inclusion for the tokens you need
+#### 1) Create a client scope
+
+1. Admin Console → **Client scopes** → **Create client scope**
+2. **Name**: `gravatar` (or any name you prefer)
+3. **Protocol**: `openid-connect`
+4. Save
+
+#### 2) Add the Gravatar mapper to the client scope
+
+1. Open the `gravatar` client scope → **Protocol mappers**
+2. **Add mapper** → **By configuration**
+3. Select **Gravatar picture**
+4. Configure:
+   - **Token Claim Name**: `picture`
+   - Enable inclusion in **ID token** and **UserInfo** (Access token optional)
+   - (Optional) size/default/rating
+5. Save
+
+#### 3) Attach the client scope as a default scope
+
+1. Admin Console → **Clients** → select your client (e.g. `invenio-app`)
+2. **Client scopes** tab
+3. Under **Default client scopes** → **Add client scope** → select `gravatar`
+
+After this, clients will receive `picture` by default (no need to request `scope=gravatar`).
 
 ## References
 
