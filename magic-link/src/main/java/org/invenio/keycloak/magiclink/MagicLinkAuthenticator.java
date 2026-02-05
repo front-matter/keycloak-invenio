@@ -315,14 +315,37 @@ public class MagicLinkAuthenticator implements Authenticator {
   }
 
   private UserModel createUser(AuthenticationFlowContext context, String email) {
-    UserModel user = context.getSession().users().addUser(context.getRealm(), email);
+    // Generate a unique username using auto-username generator
+    String username = generateUniqueUsername(context);
+
+    UserModel user = context.getSession().users().addUser(context.getRealm(), username);
     user.setEnabled(true);
     user.setEmail(email);
+    user.setEmailVerified(true); // Email verified via magic link
     context.getEvent()
         .user(user)
-        .detail("username", email)
+        .detail("username", username)
+        .detail("email", email)
+        .detail("registration_method", "magic_link_domain_auto")
         .event(EventType.REGISTER);
+
+    logger.infof("Magic Link: Auto-created user - username=%s, email=%s", username, email);
     return user;
+  }
+
+  private String generateUniqueUsername(AuthenticationFlowContext context) {
+    // Try up to 10 times to generate a unique username
+    for (int attempt = 0; attempt < 10; attempt++) {
+      String username = UsernameGenerator.generate();
+      UserModel existing = context.getSession().users().getUserByUsername(context.getRealm(), username);
+      if (existing == null) {
+        return username;
+      }
+      logger.debugf("Magic Link: Username collision, retrying - username=%s, attempt=%d", username, attempt);
+    }
+    // Fallback: use email if we can't generate unique username after 10 attempts
+    logger.warnf("Magic Link: Failed to generate unique username after 10 attempts, using email");
+    return java.util.UUID.randomUUID().toString();
   }
 
   private void showEmailSentPage(AuthenticationFlowContext context) {

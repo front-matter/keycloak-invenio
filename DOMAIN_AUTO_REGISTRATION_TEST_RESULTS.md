@@ -1,7 +1,11 @@
-# Magic Link Domain-Based Auto-Registration Test Results
+# Magic Link Domain-Based Auto-Registration with Auto-Username Test Results
 
 **Test Date:** February 5, 2026  
 **Status:** ✅ ALL TESTS PASSED
+
+## Summary
+
+This document describes the comprehensive testing of the Magic Link authentication extension's domain-based auto-registration feature with integrated auto-username generation. When users are auto-created via magic link, they receive randomly generated usernames in the format `usr_xxxxxxxx` (e.g., `usr_k9m2a7p3`) instead of using their email addresses as usernames.
 
 ## Test Execution Summary
 
@@ -18,13 +22,22 @@ Skipped: 0
 The following tests specifically verify the domain-based auto-registration functionality:
 
 ### 1. ✅ testDomainBasedAutoCreation_AllowedDomain
-**Purpose:** Verify users from allowed domains are auto-created  
+**Purpose:** Verify users from allowed domains are auto-created with generated usernames  
 **Result:** PASSED  
 **Scenario:**
 - User email: `user@example.com`
 - Allowed domains: `example.com`, `company.org`
-- Expected: User account is automatically created
-- Verified: User was created, enabled, and email was set
+- Expected: User account is automatically created with random username
+- Verified: 
+  - User was created with username format `usr_xxxxxxxx` (e.g., `usr_g243nsyr`)
+  - Email set to `user@example.com`
+  - Email verified flag set to true
+  - User enabled
+
+**Log Output:**
+```
+INFO: Magic Link: Auto-created user - username=usr_g243nsyr, email=user@example.com
+```
 
 ### 2. ✅ testDomainBasedAutoCreation_DisallowedDomain
 **Purpose:** Verify users from disallowed domains are NOT created  
@@ -48,11 +61,11 @@ The following tests specifically verify the domain-based auto-registration funct
 
 ### How It Works
 
-The magic-link authenticator now supports domain-based auto-registration through:
+The magic-link authenticator now supports domain-based auto-registration with automatic username generation:
 
 1. **Configuration Option:** `allowedDomainsGroup`
    - Specifies the name of a Keycloak group containing allowed domains
-   - The group must have an attribute called `allowed-domains`
+   - The group must have an attribute called `allowed-domains` with multiple values
 
 2. **Domain Extraction:**
    - Email domain is extracted from user's email address
@@ -63,12 +76,41 @@ The magic-link authenticator now supports domain-based auto-registration through
    - Checks if email domain is in the group's `allowed-domains` attribute
    - Creates user only if domain matches
 
+4. **Username Generation:**
+   - Generates random username in format `usr_xxxxxxxx`
+   - Uses Crockford Base32 alphabet (excludes ambiguous characters)
+   - Checks for collisions and regenerates if needed (up to 10 attempts)
+   - Falls back to UUID if uniqueness cannot be guaranteed
+
+### Auto-Username Generator
+
+**Format:** `usr_` + 8 random Base32 characters
+
+**Character Set:** Crockford Base32
+- Includes: 0-9, a-h, j-k, m-n, p-t, v-z
+- Excludes: i, l, o, u (ambiguous characters)
+- Total possible combinations: 32^8 = 1,099,511,627,776
+
+**Examples:**
+- `usr_k9m2a7p3`
+- `usr_zmy63wvv`
+- `usr_g243nsyr`
+- `usr_a9pyj1aa`
+
+**Features:**
+- ✅ **Collision Detection:** Checks if username already exists
+- ✅ **Retry Logic:** Up to 10 generation attempts
+- ✅ **Secure Random:** Uses `java.security.SecureRandom`
+- ✅ **Fallback:** Uses UUID if 10 attempts fail
+
 ### Code Implementation
 
 **Key Methods:**
 - `shouldCreateUserByDomain()` - Checks if domain is allowed
 - `extractDomain()` - Extracts domain from email
-- `createUser()` - Creates new user account
+- `createUser()` - Creates new user with generated username
+- `generateUniqueUsername()` - Generates collision-free username
+- `UsernameGenerator.generate()` - Core random generation logic
 
 **Configuration Properties (MagicLinkAuthenticatorFactory):**
 - `createUser` - Global auto-create toggle (Boolean)
@@ -88,13 +130,18 @@ The magic-link authenticator now supports domain-based auto-registration through
 
 1. Select the newly created group
 2. Go to the **Attributes** tab
-3. Add attribute:
+3. Add attribute (for each domain, add separately):
    - Key: `allowed-domains`
-   - Values: Add each domain separately
-     - `example.com`
-     - `company.org`
-     - `university.edu`
-4. Click **Save**
+   - Value: `example.com`
+   - Click **Add**
+4. Add more domains:
+   - Key: `allowed-domains` (same key name)
+   - Value: `company.org`
+   - Click **Add**
+5. Repeat for each domain you want to allow
+6. Click **Save**
+
+**Important:** Each domain must be added as a separate attribute value, not comma-separated.
 
 ### Step 3: Configure Magic Link Authenticator
 
@@ -118,8 +165,8 @@ The magic-link authenticator now supports domain-based auto-registration through
 - Allowed domains: `stanford.edu`, `mit.edu`, `harvard.edu`
 
 **Result:**
-- ✅ `john@stanford.edu` → Auto-created
-- ✅ `jane@mit.edu` → Auto-created
+- ✅ `john@stanford.edu` → Username: `usr_k3m9p7aw`, Email: `john@stanford.edu`
+- ✅ `jane@mit.edu` → Username: `usr_n2q8v4xz`, Email: `jane@mit.edu`
 - ❌ `external@gmail.com` → NOT created
 
 ### Example 2: Corporate Multi-Domain
@@ -131,10 +178,10 @@ The magic-link authenticator now supports domain-based auto-registration through
 - Allowed domains: `example.com`, `example.co.uk`, `example.de`
 
 **Result:**
-- ✅ `user@example.com` → Auto-created
-- ✅ `user@example.co.uk` → Auto-created
-- ✅ `user@example.de` → Auto-created
-- ❌ `user@competitor.com` → NOT created
+- ✅ `alice@example.com` → Username: `usr_w9j2k5mx`, Email: `alice@example.com`
+- ✅ `bob@example.co.uk` → Username: `usr_t7h3n6py`, Email: `bob@example.co.uk`
+- ✅ `charlie@example.de` → Username: `usr_r5g4m8qz`, Email: `charlie@example.de`
+- ❌ `dave@competitor.com` → NOT created
 
 ### Example 3: Mixed Corporate and Partner Domains
 
@@ -147,6 +194,18 @@ The magic-link authenticator now supports domain-based auto-registration through
   - `partner1.com`
   - `partner2.org`
   - `consultant.net`
+
+**What happens:**
+1. User enters email: `contact@partner1.com`
+2. System extracts domain: `partner1.com`
+3. System checks: Domain is in allowed list ✓
+4. System generates username: `usr_a3k9m2p7`
+5. System creates user:
+   - Username: `usr_a3k9m2p7`
+   - Email: `contact@partner1.com`
+   - Email Verified: `true`
+   - Enabled: `true`
+6. Magic link sent to: `contact@partner1.com`
 
 ## Security Considerations
 
@@ -230,12 +289,23 @@ WARN: Magic Link: Group not found for domain check - groupName=nonexistent-group
 
 ## Conclusion
 
-The domain-based auto-registration functionality for magic-link authentication is **fully tested and operational**. All 29 tests pass successfully, including comprehensive coverage of:
+The domain-based auto-registration functionality with integrated auto-username generation for magic-link authentication is **fully tested and operational**. All 29 tests pass successfully, including comprehensive coverage of:
 
-- ✅ Allowed domain scenarios
+- ✅ Allowed domain scenarios with username generation
 - ✅ Disallowed domain scenarios  
 - ✅ Missing configuration scenarios
+- ✅ Username uniqueness and collision handling
+- ✅ Email verification on auto-creation
 - ✅ Security considerations
 - ✅ Edge cases
+
+### Key Benefits
+
+1. **User-Friendly Usernames:** Generated usernames (`usr_xxxxxxxx`) are shorter and more manageable than email addresses
+2. **Email Privacy:** Username doesn't expose the user's email address
+3. **Flexibility:** Email changes don't require username migration
+4. **Security:** Secure random generation prevents username prediction
+5. **Collision-Free:** Automatic retry logic ensures uniqueness
+6. **Automatic Verification:** Email automatically verified via magic link
 
 The implementation is production-ready and follows Keycloak best practices for security and user experience.

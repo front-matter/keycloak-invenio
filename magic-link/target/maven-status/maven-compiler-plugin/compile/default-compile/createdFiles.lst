@@ -1,4 +1,5 @@
 org/invenio/keycloak/magiclink/MagicLinkAuthenticatorFactory.class
+org/invenio/keycloak/magiclink/UsernameGenerator.class
 org/invenio/keycloak/gravatar/GravatarPictureProtocolMapper.class
 org/invenio/keycloak/magiclink/MagicLinkActionToken.class
 org/invenio/keycloak/magiclink/MagicLinkActionTokenHandler.class

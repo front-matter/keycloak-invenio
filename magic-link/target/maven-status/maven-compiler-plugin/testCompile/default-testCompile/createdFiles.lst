@@ -1,3 +1,4 @@
+org/invenio/keycloak/magiclink/UsernameGeneratorTest.class
 org/invenio/keycloak/magiclink/MagicLinkActionTokenHandlerFactoryTest.class
 org/invenio/keycloak/gravatar/GravatarPictureProtocolMapperTest.class
 org/invenio/keycloak/magiclink/MagicLinkActionTokenTest.class

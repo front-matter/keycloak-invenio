@@ -114,7 +114,7 @@ Click the ⚙️ (Settings) icon next to **Magic Link Authenticator** in the aut
 
 #### Domain-Based Auto-Creation
 
-You can configure automatic user creation for specific email domains (e.g., for your organization's employees):
+You can configure automatic user creation for specific email domains (e.g., for your organization's employees). When users are auto-created via magic link, they receive a randomly generated username in the format `usr_xxxxxxxx` (e.g., `usr_k9m2a7p3`) instead of using their email address as the username. The email address is stored in the user's email field and is used for magic link delivery.
 
 1. **Create a group** to hold allowed domains:
    - Go to **Groups** → **Create group**
@@ -123,14 +123,24 @@ You can configure automatic user creation for specific email domains (e.g., for 
 2. **Add allowed domains to the group**:
    - Open the group → **Attributes** tab
    - Add attribute: `allowed-domains` 
-   - Values: `example.com`, `company.org` (one per line)
+   - Add each domain as a separate attribute value:
+     - Click **Add** → Enter `example.com`
+     - Click **Add** → Enter `company.org`
+     - Repeat for each domain
 
 3. **Configure the authenticator**:
    - Go to your authentication flow
    - Click ⚙️ next to **Magic Link Authenticator**
    - Set **Allowed domains group** to `auto-create-domains`
+   - Keep **Auto-create users** set to `false` (domain-based creation works independently)
 
 Now users with email addresses from `example.com` or `company.org` will be automatically created when they use magic link login, even if **Auto-create users** is disabled. This allows controlled auto-creation without opening it to all email addresses.
+
+**Example:**
+- User enters: `john.doe@example.com`
+- System checks: Domain `example.com` is in allowed list ✓
+- System creates: Username `usr_k9m2a7p3` with email `john.doe@example.com`
+- Email verified: Automatically set to true (verified via magic link)
 
 ### Testing
 

@@ -1,4 +1,4 @@
-# Magic Link Domain-Based Auto-Registration - Quick Test Summary
+# Magic Link Domain-Based Auto-Registration with Auto-Username - Test Summary
 
 ## ✅ TEST STATUS: ALL PASSED
 
@@ -10,14 +10,14 @@
 
 ## 🎯 What Was Tested
 
-The domain-based auto-registration feature for magic-link authentication, which allows automatic user creation based on email domain matching.
+The domain-based auto-registration feature for magic-link authentication with integrated auto-username generation. Users are automatically created with randomly generated usernames (`usr_xxxxxxxx` format) when their email domain matches the allowed list.
 
 ### Key Test Scenarios
 
 1. **✅ Allowed Domain Test**
    - Email: `user@example.com`
    - Allowed domains: `example.com`, `company.org`
-   - Result: User automatically created ✓
+   - Result: User created with username `usr_g243nsyr` ✓
 
 2. **✅ Disallowed Domain Test**
    - Email: `user@untrusted.com`
@@ -44,7 +44,7 @@ Authentication Flow → Magic Link Execution → Configure
 ```
 Keycloak Groups → Create "auto-create-domains"
   └─ Attributes
-      └─ allowed-domains
+      └─ allowed-domains (multiple values)
           ├─ example.com
           ├─ company.org
           └─ university.edu
@@ -52,7 +52,7 @@ Keycloak Groups → Create "auto-create-domains"
 
 ### Logic Flow
 ```
-User enters email (user@example.com)
+User enters email (john.doe@example.com)
   ↓
 Extract domain (example.com)
   ↓
@@ -60,9 +60,37 @@ Check if group "auto-create-domains" exists
   ↓
 Check if domain in allowed-domains attribute
   ↓
-✅ Match → Create user
-❌ No match → Deny (show generic message)
+✅ Match found
+  ↓
+Generate unique username (usr_k9m2a7p3)
+  ↓
+Create user:
+  - Username: usr_k9m2a7p3
+  - Email: john.doe@example.com
+  - Email verified: true
+  - Enabled: true
 ```
+
+---
+
+## 🆕 Auto-Username Generation
+
+### Format
+- **Pattern:** `usr_xxxxxxxx`
+- **Character set:** Base32 (Crockford) - excludes ambiguous characters (i, l, o, u)
+- **Length:** 8 random characters
+- **Examples:** `usr_k9m2a7p3`, `usr_zmy63wvv`, `usr_a9pyj1aa`
+
+### Features
+- ✅ **Collision detection:** Checks for existing usernames, regenerates if needed
+- ✅ **Secure random:** Uses `SecureRandom` for cryptographic randomness
+- ✅ **Human-readable:** Base32 alphabet avoids confusing characters
+- ✅ **Unique:** Up to 10 generation attempts before falling back to UUID
+
+### Why not use email as username?
+- Emails can be long and unwieldy in APIs/UIs
+- Email changes require username migration
+- Generated usernames are consistent, short, and user-friendly
 
 ---
 
@@ -70,7 +98,7 @@ Check if domain in allowed-domains attribute
 
 ```
 File: magic-link.jar
-Size: 34 KB
+Size: 36 KB (includes UsernameGenerator)
 Location: /Users/mfenner/Documents/keycloak-invenio/magic-link/target/
 Status: ✅ Ready for deployment
 ```

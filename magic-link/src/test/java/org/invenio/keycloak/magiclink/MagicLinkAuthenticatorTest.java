@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -184,7 +186,12 @@ class MagicLinkAuthenticatorTest {
         when(group.getAttributeStream("allowed-domains"))
                 .thenReturn(Stream.of("example.com", "company.org"));
         when(session.users()).thenReturn(userProvider);
-        when(userProvider.addUser(realm, email)).thenReturn(user);
+
+        // Mock username uniqueness check (no collision)
+        when(userProvider.getUserByUsername(any(), anyString())).thenReturn(null);
+
+        // Accept any generated username (usr_xxx format)
+        when(userProvider.addUser(any(), anyString())).thenReturn(user);
 
         // Stop the flow before token generation: mock stays disabled even after
         // setEnabled(true)
@@ -193,10 +200,11 @@ class MagicLinkAuthenticatorTest {
         // Execute
         authenticator.action(context);
 
-        // Verify user was created
-        verify(userProvider).addUser(realm, email);
+        // Verify user was created with generated username (not email)
+        verify(userProvider).addUser(eq(realm), argThat(username -> username != null && username.startsWith("usr_")));
         verify(user).setEnabled(true);
         verify(user).setEmail(email);
+        verify(user).setEmailVerified(true);
 
         // The flow continues to the generic "email sent" page
         verify(context).failure(any(), any(Response.class));
