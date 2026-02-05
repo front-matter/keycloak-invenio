@@ -180,7 +180,7 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 
 - **Version**: 1.4.0
 - **Source**: [eosc-kc/keycloak-orcid](https://github.com/eosc-kc/keycloak-orcid)
-- **Compatibility**: Keycloak 25.0.0+
+- **Compatibility**: Keycloak 25.0+
 
 ## Magic Link Extension Details
 
