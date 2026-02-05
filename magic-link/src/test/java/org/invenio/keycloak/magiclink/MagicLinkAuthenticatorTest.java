@@ -206,6 +206,11 @@ class MagicLinkAuthenticatorTest {
         verify(user).setEmail(email);
         verify(user).setEmailVerified(true);
 
+        // Verify required actions are explicitly removed (firstName/lastName are
+        // optional)
+        verify(user).removeRequiredAction(UserModel.RequiredAction.UPDATE_PROFILE);
+        verify(user).removeRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
+
         // The flow continues to the generic "email sent" page
         verify(context).failure(any(), any(Response.class));
     }

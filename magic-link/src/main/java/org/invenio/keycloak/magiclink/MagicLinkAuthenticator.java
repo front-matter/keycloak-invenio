@@ -322,6 +322,12 @@ public class MagicLinkAuthenticator implements Authenticator {
     user.setEnabled(true);
     user.setEmail(email);
     user.setEmailVerified(true); // Email verified via magic link
+
+    // firstName and lastName are optional fields, so we don't set them
+    // Explicitly remove UPDATE_PROFILE and VERIFY_EMAIL required actions
+    user.removeRequiredAction(org.keycloak.models.UserModel.RequiredAction.UPDATE_PROFILE);
+    user.removeRequiredAction(org.keycloak.models.UserModel.RequiredAction.VERIFY_EMAIL);
+
     context.getEvent()
         .user(user)
         .detail("username", username)
