@@ -62,13 +62,19 @@ class MagicLinkAuthenticatorFactoryTest {
   @Test
   void testGetConfigProperties() {
     var properties = factory.getConfigProperties();
-    assertEquals(2, properties.size());
+    assertEquals(3, properties.size());
 
     var createUserProp = properties.stream()
         .filter(p -> "createUser".equals(p.getName()))
         .findFirst();
     assertTrue(createUserProp.isPresent());
     assertEquals("Auto-create users", createUserProp.get().getLabel());
+
+    var allowedDomainsGroupProp = properties.stream()
+        .filter(p -> "allowedDomainsGroup".equals(p.getName()))
+        .findFirst();
+    assertTrue(allowedDomainsGroupProp.isPresent());
+    assertEquals("Allowed domains group", allowedDomainsGroupProp.get().getLabel());
 
     var tokenValidityProp = properties.stream()
         .filter(p -> "tokenValidity".equals(p.getName()))

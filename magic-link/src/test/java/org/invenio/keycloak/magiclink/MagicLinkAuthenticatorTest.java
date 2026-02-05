@@ -16,8 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.keycloak.email.EmailTemplateProvider;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -64,6 +67,16 @@ class MagicLinkAuthenticatorTest {
         lenient().when(context.getRealm()).thenReturn(realm);
         lenient().when(context.getAuthenticationSession()).thenReturn(authSession);
         lenient().when(context.getEvent()).thenReturn(eventBuilder);
+
+        // Used by showEmailSentPage() (domain auto-creation tests hit this path)
+        lenient().when(loginFormsProvider.setError(anyString())).thenReturn(loginFormsProvider);
+        lenient().when(loginFormsProvider.createErrorPage(any()))
+                .thenReturn(Response.status(Response.Status.UNAUTHORIZED).build());
+
+        // Used by createUser() and disabled-user handling
+        lenient().when(eventBuilder.user(any(UserModel.class))).thenReturn(eventBuilder);
+        lenient().when(eventBuilder.detail(anyString(), anyString())).thenReturn(eventBuilder);
+        lenient().when(eventBuilder.event(any())).thenReturn(eventBuilder);
     }
 
     @Test
@@ -144,5 +157,113 @@ class MagicLinkAuthenticatorTest {
         // Act
         MagicLinkAuthenticator authenticator = new MagicLinkAuthenticator();
         authenticator.sendMagicLinkEmail(mockContext, mockUser, "https://example.com/magic-link");
+    }
+
+    @Test
+    void testDomainBasedAutoCreation_AllowedDomain() {
+        // Setup
+        String email = "user@example.com";
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle("username", email);
+
+        AuthenticatorConfigModel config = mock(AuthenticatorConfigModel.class);
+        Map<String, String> configMap = new HashMap<>();
+        configMap.put("allowedDomainsGroup", "auto-create-domains");
+        configMap.put("createUser", "false");
+
+        GroupModel group = mock(GroupModel.class);
+        UserProvider userProvider = mock(UserProvider.class);
+
+        when(context.getHttpRequest()).thenReturn(httpRequest);
+        when(httpRequest.getDecodedFormParameters()).thenReturn(formData);
+        when(context.getAuthenticatorConfig()).thenReturn(config);
+        when(config.getConfig()).thenReturn(configMap);
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getGroupsStream()).thenReturn(Stream.of(group));
+        when(group.getName()).thenReturn("auto-create-domains");
+        when(group.getAttributeStream("allowed-domains"))
+                .thenReturn(Stream.of("example.com", "company.org"));
+        when(session.users()).thenReturn(userProvider);
+        when(userProvider.addUser(realm, email)).thenReturn(user);
+
+        // Stop the flow before token generation: mock stays disabled even after
+        // setEnabled(true)
+        when(user.isEnabled()).thenReturn(false);
+
+        // Execute
+        authenticator.action(context);
+
+        // Verify user was created
+        verify(userProvider).addUser(realm, email);
+        verify(user).setEnabled(true);
+        verify(user).setEmail(email);
+
+        // The flow continues to the generic "email sent" page
+        verify(context).failure(any(), any(Response.class));
+    }
+
+    @Test
+    void testDomainBasedAutoCreation_DisallowedDomain() {
+        // Setup
+        String email = "user@untrusted.com";
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle("username", email);
+
+        AuthenticatorConfigModel config = mock(AuthenticatorConfigModel.class);
+        Map<String, String> configMap = new HashMap<>();
+        configMap.put("allowedDomainsGroup", "auto-create-domains");
+        configMap.put("createUser", "false");
+
+        GroupModel group = mock(GroupModel.class);
+        UserProvider userProvider = mock(UserProvider.class);
+
+        when(context.getHttpRequest()).thenReturn(httpRequest);
+        when(httpRequest.getDecodedFormParameters()).thenReturn(formData);
+        when(context.getAuthenticatorConfig()).thenReturn(config);
+        when(config.getConfig()).thenReturn(configMap);
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getGroupsStream()).thenReturn(Stream.of(group));
+        when(group.getName()).thenReturn("auto-create-domains");
+        when(group.getAttributeStream("allowed-domains"))
+                .thenReturn(Stream.of("example.com", "company.org"));
+        when(session.users()).thenReturn(userProvider);
+
+        // Execute
+        authenticator.action(context);
+
+        // Verify user was NOT created
+        verify(userProvider, never()).addUser(any(), anyString());
+        // Should show email sent page without revealing user doesn't exist
+        verify(context).failure(any(), any(Response.class));
+    }
+
+    @Test
+    void testDomainBasedAutoCreation_GroupNotFound() {
+        // Setup
+        String email = "user@example.com";
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle("username", email);
+
+        AuthenticatorConfigModel config = mock(AuthenticatorConfigModel.class);
+        Map<String, String> configMap = new HashMap<>();
+        configMap.put("allowedDomainsGroup", "nonexistent-group");
+        configMap.put("createUser", "false");
+
+        UserProvider userProvider = mock(UserProvider.class);
+
+        when(context.getHttpRequest()).thenReturn(httpRequest);
+        when(httpRequest.getDecodedFormParameters()).thenReturn(formData);
+        when(context.getAuthenticatorConfig()).thenReturn(config);
+        when(config.getConfig()).thenReturn(configMap);
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getGroupsStream()).thenReturn(Stream.empty());
+        when(session.users()).thenReturn(userProvider);
+
+        // Execute
+        authenticator.action(context);
+
+        // Verify user was NOT created
+        verify(userProvider, never()).addUser(any(), anyString());
+        verify(context).failure(any(), any(Response.class));
     }
 }

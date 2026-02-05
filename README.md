@@ -109,7 +109,28 @@ Click the ⚙️ (Settings) icon next to **Magic Link Authenticator** in the aut
 #### Available Options
 
 - **Link validity**: How long the magic link remains valid (default: 900 seconds = 15 minutes)
-- **Create user if not exists**: Automatically create users who don't have an account (default: disabled)
+- **Auto-create users**: Automatically create users who don't have an account (default: disabled)
+- **Allowed domains group**: Name of a group containing an `allowed-domains` attribute with trusted email domains for auto-creation (see Domain-Based Auto-Creation below)
+
+#### Domain-Based Auto-Creation
+
+You can configure automatic user creation for specific email domains (e.g., for your organization's employees):
+
+1. **Create a group** to hold allowed domains:
+   - Go to **Groups** → **Create group**
+   - Name: `auto-create-domains` (or any name you prefer)
+
+2. **Add allowed domains to the group**:
+   - Open the group → **Attributes** tab
+   - Add attribute: `allowed-domains` 
+   - Values: `example.com`, `company.org` (one per line)
+
+3. **Configure the authenticator**:
+   - Go to your authentication flow
+   - Click ⚙️ next to **Magic Link Authenticator**
+   - Set **Allowed domains group** to `auto-create-domains`
+
+Now users with email addresses from `example.com` or `company.org` will be automatically created when they use magic link login, even if **Auto-create users** is disabled. This allows controlled auto-creation without opening it to all email addresses.
 
 ### Testing
 

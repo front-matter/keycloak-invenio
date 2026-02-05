@@ -64,6 +64,14 @@ public class MagicLinkAuthenticatorFactory implements AuthenticatorFactory {
     createUser.setDefaultValue(false);
     properties.add(createUser);
 
+    ProviderConfigProperty allowedDomainsGroup = new ProviderConfigProperty();
+    allowedDomainsGroup.setType(ProviderConfigProperty.STRING_TYPE);
+    allowedDomainsGroup.setName("allowedDomainsGroup");
+    allowedDomainsGroup.setLabel("Allowed domains group");
+    allowedDomainsGroup.setHelpText(
+        "Name of the group containing 'allowed-domains' attribute with email domains for auto-creation (e.g., example.com, company.org)");
+    properties.add(allowedDomainsGroup);
+
     ProviderConfigProperty tokenValidity = new ProviderConfigProperty();
     tokenValidity.setType(ProviderConfigProperty.STRING_TYPE);
     tokenValidity.setName("tokenValidity");

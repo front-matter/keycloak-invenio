@@ -13,6 +13,7 @@ import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
+import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -26,7 +27,9 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Magic Link Authenticator - sends email with one-time passwordless login link
@@ -77,7 +80,7 @@ public class MagicLinkAuthenticator implements Authenticator {
 
     if (user == null) {
       // User doesn't exist - optionally create
-      if (shouldCreateUser(context)) {
+      if (shouldCreateUser(context) || shouldCreateUserByDomain(context, email)) {
         logger.debugf("Magic Link: User not found, auto-create enabled - email=%s", email);
         user = createUser(context, email);
       } else {
@@ -351,6 +354,53 @@ public class MagicLinkAuthenticator implements Authenticator {
             context.getAuthenticatorConfig()
                 .getConfig()
                 .getOrDefault("createUser", "false"));
+  }
+
+  private boolean shouldCreateUserByDomain(AuthenticationFlowContext context, String email) {
+    if (context.getAuthenticatorConfig() == null) {
+      return false;
+    }
+
+    String groupName = context.getAuthenticatorConfig()
+        .getConfig()
+        .get("allowedDomainsGroup");
+
+    if (groupName == null || groupName.trim().isEmpty()) {
+      return false;
+    }
+
+    // Extract domain from email
+    String domain = extractDomain(email);
+    if (domain == null) {
+      return false;
+    }
+
+    // Find the group by name
+    Stream<GroupModel> groups = context.getRealm().getGroupsStream()
+        .filter(g -> groupName.equals(g.getName()));
+    GroupModel group = groups.findFirst().orElse(null);
+
+    if (group == null) {
+      logger.warnf("Magic Link: Group not found for domain check - groupName=%s", groupName);
+      return false;
+    }
+
+    // Check if domain is in group's allowed-domains attribute
+    List<String> allowedDomains = group.getAttributeStream("allowed-domains").toList();
+    boolean isAllowed = allowedDomains.stream()
+        .anyMatch(d -> d.trim().equalsIgnoreCase(domain));
+
+    logger.debugf("Magic Link: Domain check - email=%s, domain=%s, group=%s, allowed=%s",
+        email, domain, groupName, isAllowed);
+
+    return isAllowed;
+  }
+
+  private String extractDomain(String email) {
+    if (email == null || !email.contains("@")) {
+      return null;
+    }
+    return email.substring(email.indexOf("@") + 1).toLowerCase();
   }
 
   private int getTokenValidity(AuthenticationFlowContext context) {
