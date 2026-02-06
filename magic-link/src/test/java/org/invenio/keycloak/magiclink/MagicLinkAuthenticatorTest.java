@@ -210,6 +210,7 @@ class MagicLinkAuthenticatorTest {
         // optional)
         verify(user).removeRequiredAction(UserModel.RequiredAction.UPDATE_PROFILE);
         verify(user).removeRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
+        verify(user).removeRequiredAction("VERIFY_PROFILE"); // User Profile feature in Keycloak 26.x
 
         // The flow continues to the generic "email sent" page
         verify(context).failure(any(), any(Response.class));

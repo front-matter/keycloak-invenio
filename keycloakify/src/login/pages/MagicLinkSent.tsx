@@ -35,14 +35,7 @@ export default function MagicLinkSent(props: PageProps<Extract<KcContext, { page
                 <div id="kc-form-wrapper">
                     <p>{msg("magicLinkSentInstructions")}</p>
 
-                    <div style={{ marginTop: "30px", padding: "20px", backgroundColor: "#f5f5f5", borderRadius: "4px" }}>
-                        <h3 style={{ marginTop: 0, fontSize: "16px", color: "#333333" }}>{msg("magicLinkSentNextSteps")}</h3>
-                        <ol style={{ marginBottom: 0, paddingLeft: "20px", color: "#666666" }}>
-                            <li>{msg("magicLinkSentStep1")}</li>
-                            <li>{msg("magicLinkSentStep2")}</li>
-                            <li>{msg("magicLinkSentStep3")}</li>
-                        </ol>
-                    </div>
+                    <p>Click the link in your email to complete the login. You can safely close this window.</p>
 
                     <div style={{ marginTop: "20px", textAlign: "center" }}>
                         <p style={{ fontSize: "14px", color: "#999999" }}>{msg("magicLinkSentNoEmail")}</p>

@@ -16,7 +16,7 @@ export const Default: Story = {
     render: () => <KcPageStory />
 };
 
-export const WithCustomEmail: Story = {
+export const WithCustomMessage: Story = {
     render: () => (
         <KcPageStory
             kcContext={{

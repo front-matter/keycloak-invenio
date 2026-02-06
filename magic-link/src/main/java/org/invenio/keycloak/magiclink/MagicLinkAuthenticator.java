@@ -99,6 +99,17 @@ public class MagicLinkAuthenticator implements Authenticator {
       return;
     }
 
+    // Check domain restriction ONLY if allowedDomainsGroup is configured
+    // If not configured, all domains are allowed (no restriction)
+    // This ensures domain validation only when explicitly enabled
+    if (isAllowedDomainsConfigured(context) && !isDomainAllowed(context, email)) {
+      String domain = extractDomain(email);
+      logger.warnf("Magic Link: Domain not allowed - email=%s, domain=%s, userId=%s",
+          email, domain, user.getId());
+      showEmailSentPage(context); // Don't reveal domain restriction to user
+      return;
+    }
+
     // Generate and send magic link
     try {
       String link = generateMagicLink(context, user);
@@ -324,9 +335,11 @@ public class MagicLinkAuthenticator implements Authenticator {
     user.setEmailVerified(true); // Email verified via magic link
 
     // firstName and lastName are optional fields, so we don't set them
-    // Explicitly remove UPDATE_PROFILE and VERIFY_EMAIL required actions
+    // Explicitly remove all profile-related required actions
     user.removeRequiredAction(org.keycloak.models.UserModel.RequiredAction.UPDATE_PROFILE);
     user.removeRequiredAction(org.keycloak.models.UserModel.RequiredAction.VERIFY_EMAIL);
+    // VERIFY_PROFILE is a separate action in Keycloak 26.x for User Profile feature
+    user.removeRequiredAction("VERIFY_PROFILE");
 
     context.getEvent()
         .user(user)
@@ -385,7 +398,17 @@ public class MagicLinkAuthenticator implements Authenticator {
                 .getOrDefault("createUser", "false"));
   }
 
-  private boolean shouldCreateUserByDomain(AuthenticationFlowContext context, String email) {
+  private boolean isAllowedDomainsConfigured(AuthenticationFlowContext context) {
+    if (context.getAuthenticatorConfig() == null) {
+      return false;
+    }
+    String groupName = context.getAuthenticatorConfig()
+        .getConfig()
+        .get("allowedDomainsGroup");
+    return groupName != null && !groupName.trim().isEmpty();
+  }
+
+  private boolean isDomainAllowed(AuthenticationFlowContext context, String email) {
     if (context.getAuthenticatorConfig() == null) {
       return false;
     }
@@ -423,6 +446,10 @@ public class MagicLinkAuthenticator implements Authenticator {
         email, domain, groupName, isAllowed);
 
     return isAllowed;
+  }
+
+  private boolean shouldCreateUserByDomain(AuthenticationFlowContext context, String email) {
+    return isDomainAllowed(context, email);
   }
 
   private String extractDomain(String email) {

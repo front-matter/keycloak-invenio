@@ -16,22 +16,7 @@
             <div id="kc-form-wrapper">
                 <p>${msg("magicLinkSentInstructions")}</p>
                 
-                <div style="margin-top: 30px; padding: 20px; background-color: #f5f5f5; border-radius: 4px;">
-                    <h3 style="margin-top: 0; font-size: 16px; color: #333333;">
-                        ${msg("magicLinkSentNextSteps")}
-                    </h3>
-                    <ol style="margin-bottom: 0; padding-left: 20px; color: #666666;">
-                        <li>${msg("magicLinkSentStep1")}</li>
-                        <li>${msg("magicLinkSentStep2")}</li>
-                        <li>${msg("magicLinkSentStep3")}</li>
-                    </ol>
-                </div>
-                
-                <div style="margin-top: 20px; text-align: center; padding: 15px; background-color: #fff3cd; border-radius: 4px; border: 1px solid #ffc107;">
-                    <p style="font-size: 14px; color: #856404; margin: 0;">
-                        <strong>Important:</strong> You can safely close this window. Click the link in your email to complete the login.
-                    </p>
-                </div>
+                <p>Click the link in your email to complete the login. You can safely close this window.</p>
 
                 <script>
                     // Allow user to close this window/tab after a few seconds
