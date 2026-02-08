@@ -257,24 +257,18 @@ public class MagicLinkAuthenticator implements Authenticator {
     // Capture all client notes from original session for OIDC flow preservation
     Map<String, String> clientNotes = new HashMap<>(context.getAuthenticationSession().getClientNotes());
 
-    // Pass the compound auth session ID so the magic link handler can reuse
-    // the CURRENT auth session (kept alive by challenge() in showEmailSentPage).
-    // This prevents AUTH_SESSION_ID cookie conflicts that cause
-    // RESTART_AUTHENTICATION_ERROR and ultimately "authentication_expired".
-    // - If the session is still alive when the link is clicked → reused directly
-    // - If the session expired → startFreshAuthenticationSession() creates a new
-    // one
-    AuthenticationSessionModel authSession = context.getAuthenticationSession();
-    String compoundAuthSessionId = null;
-    if (authSession != null && authSession.getParentSession() != null) {
-      compoundAuthSessionId = authSession.getParentSession().getId()
-          + "." + authSession.getTabId();
-    }
+    // Self-contained token: compoundAuthSessionId = null.
+    // The magic link carries ALL info needed to authenticate (userId, clientId,
+    // redirectUri, OIDC clientNotes). When clicked,
+    // startFreshAuthenticationSession()
+    // creates a completely new auth session from the token data.
+    // This avoids conflicts with the initial auth session (kept alive by
+    // challenge() in showEmailSentPage) and works even if the link is opened
+    // in a different browser context (e.g. mobile phone, different tab).
 
     logger.debugf(
-        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, clientNotes=%d, validitySecs=%d, absoluteExp=%d, compoundAuthSessionId=%s",
-        user.getId(), clientId, redirectUri, clientNotes.size(), validityInSecs, absoluteExpirationInSecs,
-        compoundAuthSessionId);
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, clientNotes=%d, validitySecs=%d, absoluteExp=%d",
+        user.getId(), clientId, redirectUri, clientNotes.size(), validityInSecs, absoluteExpirationInSecs);
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
@@ -282,7 +276,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         clientId,
         redirectUri,
         rememberMe,
-        compoundAuthSessionId,
+        null, // self-contained: always create fresh auth session on click
         clientNotes);
 
     logger.debugf(
@@ -384,14 +378,15 @@ public class MagicLinkAuthenticator implements Authenticator {
         safeClientId(context),
         safeRedirectUri(context));
 
-    // Use challenge() instead of failure() to keep the auth session alive
-    // and NOT redirect back to the client with an error.
-    // The user will see Keycloak's "check your email" page.
-    // When they click the magic link, a fresh auth session is created.
+    // Use challenge() with our custom magic-link-sent.ftl template.
+    // - challenge() shows the page without redirecting back to the client
+    // - Our custom template has NO "Back to Application" link (unlike the
+    // generic info.ftl which has pageRedirectUri/client.baseUrl links
+    // that would redirect back to the client with authentication_expired)
+    // - The magic link is fully self-contained and will create its own
+    // fresh auth session when clicked
     Response response = context.form()
-        .setInfo(
-            "A login link has been sent to your email. Please check your inbox and click the link to continue. You can close this window.")
-        .createInfoPage();
+        .createForm("magic-link-sent.ftl");
     context.challenge(response);
   }
 

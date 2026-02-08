@@ -77,6 +77,8 @@ class MagicLinkAuthenticatorTest {
                 .thenReturn(Response.status(Response.Status.UNAUTHORIZED).build());
         lenient().when(loginFormsProvider.createInfoPage())
                 .thenReturn(Response.ok().build());
+        lenient().when(loginFormsProvider.createForm(anyString()))
+                .thenReturn(Response.ok().build());
 
         // Used by createUser() and disabled-user handling
         lenient().when(eventBuilder.user(any(UserModel.class))).thenReturn(eventBuilder);
