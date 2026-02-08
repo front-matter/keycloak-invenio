@@ -266,22 +266,32 @@ public class MagicLinkActionTokenHandler extends AbstractActionTokenHandler<Magi
                         // Set user session note to track magic link login
                         authSession.setUserSessionNote(LOGIN_METHOD, "magic-link");
 
-                        // Check for required actions
-                        String nextAction = AuthenticationManager.nextRequiredAction(
+                        // Set client scopes in session (needed for OIDC token generation)
+                        AuthenticationManager.setClientScopesInSession(
+                                        tokenContext.getSession(), authSession);
+
+                        // Complete the authentication flow directly.
+                        // IMPORTANT: We use nextActionAfterAuthentication() instead of
+                        // redirectToRequiredActions() because the latter generates an
+                        // intermediate redirect to /login-actions/required-action with a
+                        // session_code that can become stale before the browser follows it,
+                        // causing invalid_code → already_logged_in → authentication_expired.
+                        //
+                        // nextActionAfterAuthentication() handles both cases correctly:
+                        // - No required actions: calls finishedRequiredActions() directly,
+                        // which creates the user session, generates the OIDC auth code,
+                        // and returns a DIRECT redirect to the client (no intermediate hop)
+                        // - Required actions present: redirects to the required actions page
+                        logger.debugf("Magic Link: Completing authentication flow for user=%s",
+                                        user.getId());
+
+                        return AuthenticationManager.nextActionAfterAuthentication(
                                         tokenContext.getSession(),
                                         authSession,
+                                        tokenContext.getClientConnection(),
                                         tokenContext.getRequest(),
-                                        tokenContext.getEvent());
-
-                        logger.debugf("Magic Link: Redirecting to required actions. nextAction=%s, user=%s",
-                                        nextAction != null ? nextAction : "none", user.getId());
-
-                        return AuthenticationManager.redirectToRequiredActions(
-                                        tokenContext.getSession(),
-                                        tokenContext.getRealm(),
-                                        authSession,
                                         tokenContext.getUriInfo(),
-                                        nextAction);
+                                        tokenContext.getEvent());
                 }
 
                 // Invalid redirect URI

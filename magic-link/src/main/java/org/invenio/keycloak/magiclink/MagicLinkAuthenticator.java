@@ -380,9 +380,6 @@ public class MagicLinkAuthenticator implements Authenticator {
 
     // Use challenge() with our custom magic-link-sent.ftl template.
     // - challenge() shows the page without redirecting back to the client
-    // - Our custom template has NO "Back to Application" link (unlike the
-    // generic info.ftl which has pageRedirectUri/client.baseUrl links
-    // that would redirect back to the client with authentication_expired)
     // - The magic link is fully self-contained and will create its own
     // fresh auth session when clicked
     Response response = context.form()
