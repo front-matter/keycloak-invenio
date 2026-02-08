@@ -368,26 +368,20 @@ public class MagicLinkAuthenticator implements Authenticator {
   }
 
   private void showEmailSentPage(AuthenticationFlowContext context) {
-    // For OAuth flows, we need to properly terminate the authorization request.
-    // Since magic link auth is asynchronous (user must click email), we can't
-    // complete
-    // the current OAuth flow. Instead, we return an error response that redirects
-    // back
-    // to the client application with an error message.
-    // When the user clicks the magic link, a NEW auth session is created and
-    // succeeds.
-
     logger.infof(
-        "Magic Link: Terminating current auth flow (async magic link) - clientId=%s, redirectUri=%s",
+        "Magic Link: Showing email sent page (async magic link) - clientId=%s, redirectUri=%s",
         safeClientId(context),
         safeRedirectUri(context));
 
-    context.getEvent().error("magic_link_sent");
+    // Use challenge() instead of failure() to keep the auth session alive
+    // and NOT redirect back to the client with an error.
+    // The user will see Keycloak's "check your email" page.
+    // When they click the magic link, a fresh auth session is created.
     Response response = context.form()
-        .setError(
+        .setInfo(
             "A login link has been sent to your email. Please check your inbox and click the link to continue. You can close this window.")
-        .createErrorPage(Response.Status.UNAUTHORIZED);
-    context.failure(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR, response);
+        .createInfoPage();
+    context.challenge(response);
   }
 
   private boolean shouldCreateUser(AuthenticationFlowContext context) {
