@@ -27,15 +27,3 @@ export const Spanish: Story = {
         />
     )
 };
-
-export const WithCustomMessage: Story = {
-    render: () => (
-        <KcPageStory
-            kcContext={{
-                url: {
-                    loginAction: "/auth/realms/myrealm/login-actions/authenticate"
-                }
-            }}
-        />
-    )
-};

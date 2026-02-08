@@ -17,21 +17,6 @@
                 <p>${msg("magicLinkSentInstructions")}</p>
                 
                 <p>Click the link in your email to complete the login. You can safely close this window.</p>
-
-                <script>
-                    // Allow user to close this window/tab after a few seconds
-                    setTimeout(function() {
-                        // Add a close button for convenience
-                        var closeBtn = document.createElement('button');
-                        closeBtn.innerHTML = 'Close this window';
-                        closeBtn.className = '${properties.kcButtonClass!} ${properties.kcButtonSecondaryClass!}';
-                        closeBtn.style.marginTop = '20px';
-                        closeBtn.onclick = function() {
-                            window.close();
-                        };
-                        document.getElementById('kc-form-wrapper').appendChild(closeBtn);
-                    }, 3000);
-                </script>
             </div>
         </div>
     </#if>
