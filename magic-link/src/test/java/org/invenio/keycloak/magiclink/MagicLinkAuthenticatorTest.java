@@ -72,8 +72,11 @@ class MagicLinkAuthenticatorTest {
 
         // Used by showEmailSentPage() (domain auto-creation tests hit this path)
         lenient().when(loginFormsProvider.setError(anyString())).thenReturn(loginFormsProvider);
+        lenient().when(loginFormsProvider.setInfo(anyString())).thenReturn(loginFormsProvider);
         lenient().when(loginFormsProvider.createErrorPage(any()))
                 .thenReturn(Response.status(Response.Status.UNAUTHORIZED).build());
+        lenient().when(loginFormsProvider.createInfoPage())
+                .thenReturn(Response.ok().build());
 
         // Used by createUser() and disabled-user handling
         lenient().when(eventBuilder.user(any(UserModel.class))).thenReturn(eventBuilder);
@@ -212,8 +215,9 @@ class MagicLinkAuthenticatorTest {
         verify(user).removeRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
         verify(user).removeRequiredAction("VERIFY_PROFILE"); // User Profile feature in Keycloak 26.x
 
-        // The flow continues to the generic "email sent" page
-        verify(context).failure(any(), any(Response.class));
+        // The flow continues to the generic "email sent" page (challenge keeps session
+        // alive)
+        verify(context).challenge(any(Response.class));
     }
 
     @Test
@@ -248,7 +252,7 @@ class MagicLinkAuthenticatorTest {
         // Verify user was NOT created
         verify(userProvider, never()).addUser(any(), anyString());
         // Should show email sent page without revealing user doesn't exist
-        verify(context).failure(any(), any(Response.class));
+        verify(context).challenge(any(Response.class));
     }
 
     @Test
@@ -278,6 +282,6 @@ class MagicLinkAuthenticatorTest {
 
         // Verify user was NOT created
         verify(userProvider, never()).addUser(any(), anyString());
-        verify(context).failure(any(), any(Response.class));
+        verify(context).challenge(any(Response.class));
     }
 }

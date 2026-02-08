@@ -257,13 +257,24 @@ public class MagicLinkAuthenticator implements Authenticator {
     // Capture all client notes from original session for OIDC flow preservation
     Map<String, String> clientNotes = new HashMap<>(context.getAuthenticationSession().getClientNotes());
 
-    // Don't pass compound session ID - the original auth session may expire before
-    // the user clicks the link. Keycloak will create a fresh authentication session
-    // when processing the token, using the clientId and redirectUri stored in the
-    // token.
+    // Pass the compound auth session ID so the magic link handler can reuse
+    // the CURRENT auth session (kept alive by challenge() in showEmailSentPage).
+    // This prevents AUTH_SESSION_ID cookie conflicts that cause
+    // RESTART_AUTHENTICATION_ERROR and ultimately "authentication_expired".
+    // - If the session is still alive when the link is clicked → reused directly
+    // - If the session expired → startFreshAuthenticationSession() creates a new
+    // one
+    AuthenticationSessionModel authSession = context.getAuthenticationSession();
+    String compoundAuthSessionId = null;
+    if (authSession != null && authSession.getParentSession() != null) {
+      compoundAuthSessionId = authSession.getParentSession().getId()
+          + "." + authSession.getTabId();
+    }
+
     logger.debugf(
-        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, clientNotes=%d, validitySecs=%d, absoluteExp=%d",
-        user.getId(), clientId, redirectUri, clientNotes.size(), validityInSecs, absoluteExpirationInSecs);
+        "Magic Link: Generating token - userId=%s, clientId=%s, redirectUri=%s, clientNotes=%d, validitySecs=%d, absoluteExp=%d, compoundAuthSessionId=%s",
+        user.getId(), clientId, redirectUri, clientNotes.size(), validityInSecs, absoluteExpirationInSecs,
+        compoundAuthSessionId);
 
     MagicLinkActionToken token = new MagicLinkActionToken(
         user.getId(),
@@ -271,7 +282,7 @@ public class MagicLinkAuthenticator implements Authenticator {
         clientId,
         redirectUri,
         rememberMe,
-        null, // null = create fresh auth session
+        compoundAuthSessionId,
         clientNotes);
 
     logger.debugf(
