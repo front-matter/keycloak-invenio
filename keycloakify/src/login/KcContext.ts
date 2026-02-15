@@ -9,6 +9,7 @@ export type KcContextExtension = {
     realm: {
         attributes?: {
             logoName?: string;
+            logoUrl?: string;
             [key: string]: string | undefined;
         };
     };

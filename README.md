@@ -48,6 +48,28 @@ To use the ORCID theme with the logo:
 2. Set Login Theme to `orcid-theme`
 3. Save changes
 
+### Custom Login Logo
+
+The login theme supports displaying a custom logo in the header. You can configure this via realm attributes:
+
+1. Go to **Realm Settings** → **General**
+2. Scroll to **Realm attributes**
+3. Click **Add attribute**
+4. Key: `logoUrl`
+5. Value: URL to your logo image (e.g., `https://example.com/logo.svg` or `https://example.com/logo.png`)
+6. Click **Save**
+
+**Configuration Options:**
+- If `logoUrl` is set, the logo image will be displayedin the login header
+- If `logoUrl` is not set, the realm display name will be shown (default behavior)
+- Recommended logo size: max-height 60px, will scale automatically
+- Supported formats: SVG, PNG, JPG, WebP
+
+**Example:**
+```
+logoUrl = https://invenio-rdm.example.org/static/logo.svg
+```
+
 ## Magic Link Passwordless Authentication
 
 This image includes a custom Magic Link authenticator extension for passwordless email-based authentication. Users receive a login link via email that automatically authenticates them when clicked.

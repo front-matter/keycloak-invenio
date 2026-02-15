@@ -12,7 +12,8 @@ const kcContextExtension: KcContextExtension = {
     },
     realm: {
         attributes: {
-            logoName: "logo-invenio-white.svg"
+            logoName: "logo-invenio-white.svg",
+            logoUrl: "https://example.com/logo.svg"
         }
     }
 };

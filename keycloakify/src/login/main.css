@@ -5,6 +5,15 @@ body.kcBodyClass {
 .login-pf body {
   background-image: none !important;
 }
+
+/* Logo styling */
+.kc-logo {
+  max-width: 100%;
+  max-height: 60px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
 /* FontAwesome ORCID icon support */
 .fa-orcid:before {
   content: "\f8d2";
