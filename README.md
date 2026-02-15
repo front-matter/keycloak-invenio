@@ -50,25 +50,81 @@ To use the ORCID theme with the logo:
 
 ### Custom Login Logo
 
-The login theme supports displaying a custom logo in the header. You can configure this via realm attributes:
+The login theme supports displaying a custom logo in the header. You can configure this via realm attributes.
 
-1. Go to **Realm Settings** → **General**
-2. Scroll to **Realm attributes**
-3. Click **Add attribute**
-4. Key: `logoUrl`
-5. Value: URL to your logo image (e.g., `https://example.com/logo.svg` or `https://example.com/logo.png`)
-6. Click **Save**
+#### Option 1: Via Realm JSON Configuration (Recommended)
+
+1. Go to **Realm Settings** → **Action** (⋮) menu → **Partial export**
+2. Enable **Export groups and roles**
+3. Click **Export**
+4. Open the downloaded JSON file
+5. Add or modify the `attributes` section at the realm level:
+
+```json
+{
+  "realm": "your-realm-name",
+  "attributes": {
+    "logoUrl": "https://example.com/logo.svg"
+  },
+  ...
+}
+```
+
+6. Go back to **Realm Settings** → **Action** (⋮) menu → **Partial import**
+7. Upload the modified JSON file
+8. Select **Skip** for existing resources or **Overwrite** as needed
+9. Click **Import**
+
+#### Option 2: Via Keycloak Admin REST API
+
+Use the Keycloak Admin REST API to set the realm attribute:
+
+```bash
+# Get admin token
+TOKEN=$(curl -X POST "http://localhost:8080/realms/master/protocol/openid-connect/token" \
+  -d "client_id=admin-cli" \
+  -d "username=admin" \
+  -d "password=admin" \
+  -d "grant_type=password" | jq -r '.access_token')
+
+# Update realm with logoUrl attribute
+curl -X PUT "http://localhost:8080/admin/realms/YOUR_REALM" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "attributes": {
+      "logoUrl": "https://example.com/logo.svg"
+    }
+  }'
+```
+
+#### Option 3: Via realm-config.json (Pre-deployment)
+
+Add the `logoUrl` attribute to your [realm-config.json](realm-config.json) file before importing:
+
+```json
+{
+  "realm": "invenio",
+  "attributes": {
+    "logoUrl": "https://invenio-rdm.example.org/static/logo.svg"
+  },
+  ...
+}
+```
 
 **Configuration Options:**
-- If `logoUrl` is set, the logo image will be displayedin the login header
+- If `logoUrl` is set, the logo image will be displayed in the login header
 - If `logoUrl` is not set, the realm display name will be shown (default behavior)
 - Recommended logo size: max-height 60px, will scale automatically
 - Supported formats: SVG, PNG, JPG, WebP
+- URL must be publicly accessible from users' browsers
 
 **Example:**
 ```
 logoUrl = https://invenio-rdm.example.org/static/logo.svg
 ```
+
+**Note:** In Keycloak 26.x, the "Realm attributes" UI section may not be visible in all configurations. Use the JSON import/export method or REST API as alternatives.
 
 ## Magic Link Passwordless Authentication
 
