@@ -256,6 +256,34 @@ Magic Link authentication requires a valid email address. Make sure:
 4. Monitor authentication logs for suspicious activity
 5. Ensure users understand not to share magic links
 
+## Metrics (Prometheus & Grafana)
+
+The image is built with `--metrics-enabled=true` and `--health-enabled=true`, so two extra endpoints are available on the **management port 9000** (not the public port 8080):
+
+| Endpoint | Purpose |
+|---|---|
+| `http://<host>:9000/metrics` | Prometheus scrape endpoint |
+| `http://<host>:9000/health/ready` | Readiness probe |
+| `http://<host>:9000/health/live` | Liveness probe |
+
+### Expose the management port
+
+When running the container, publish port 9000:
+
+```bash
+docker run -p 8080:8080 -p 9000:9000 \
+  -e KEYCLOAK_ADMIN=admin \
+  -e KEYCLOAK_ADMIN_PASSWORD=admin \
+  ghcr.io/front-matter/keycloak-invenio:latest start-dev
+```
+
+For production (`start` instead of `start-dev`) also set:
+
+```bash
+  -e KC_METRICS_ENABLED=true \
+  -e KC_HEALTH_ENABLED=true \
+```
+
 ## Building from Source
 
 Build the Docker image locally:
