@@ -44,7 +44,10 @@ RUN ls -la /opt/keycloak/providers/ && \
   ls -1 /opt/keycloak/providers/*.jar
 
 # Build Keycloak with all providers (required for production)
-RUN /opt/keycloak/bin/kc.sh build
+# --metrics-enabled and --health-enabled are baked in so the optimised start
+# does not trigger a "re-augmentation required" warning at runtime.
+RUN /opt/keycloak/bin/kc.sh build \
+  --health-enabled=true --metrics-enabled=true
 
 # Verify all extension JARs are present
 RUN echo "============================================" && \
