@@ -93,26 +93,29 @@ public class MagicLinkAuthenticator implements Authenticator {
     if (user == null) {
       // User doesn't exist - optionally create
       if (shouldCreateUser(context) || shouldCreateUserByDomain(context, email)) {
-        logger.debugf("Magic Link: User not found, auto-create enabled - email=%s", email);
+        logger.infof("Magic Link: User not found, auto-creating - email=%s", email);
         user = createUser(context, email);
       } else {
-        logger.debugf("Magic Link: User not found, auto-create disabled - email=%s", email);
+        logger.infof("Magic Link: User not found, auto-create disabled, skipping send - email=%s", email);
         // Don't reveal user doesn't exist
         showEmailSentPage(context);
         return;
       }
+    } else {
+      logger.infof("Magic Link: User found - userId=%s, email=%s", user.getId(), email);
     }
 
     // Check if user is enabled
     if (!user.isEnabled()) {
       context.getEvent().user(user).error(Errors.USER_DISABLED);
-      logger.debugf("Magic Link: User disabled - userId=%s, email=%s", user.getId(), email);
+      logger.warnf("Magic Link: User disabled, skipping send - userId=%s, email=%s", user.getId(), email);
       showEmailSentPage(context);
       return;
     }
 
     // Generate and send magic link
     try {
+      logger.infof("Magic Link: Sending magic link email - userId=%s, email=%s", user.getId(), email);
       String link = generateMagicLink(context, user);
       sendMagicLinkEmail(context, user, link);
 
@@ -124,11 +127,11 @@ public class MagicLinkAuthenticator implements Authenticator {
       // the link
       context.getAuthenticationSession().setAuthNote("MAGIC_LINK_SENT", "true");
 
-      logger.debugf(
-          "Magic Link: Email send attempted - userId=%s, clientId=%s, redirectUri=%s",
+      logger.infof(
+          "Magic Link: Magic link email sent successfully - userId=%s, email=%s, clientId=%s",
           user.getId(),
-          safeClientId(context),
-          safeRedirectUri(context));
+          email,
+          safeClientId(context));
 
       showEmailSentPage(context);
     } catch (EmailException e) {

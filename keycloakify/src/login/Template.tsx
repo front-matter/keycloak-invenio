@@ -160,16 +160,15 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
                             <form id="kc-select-try-another-way-form" action={url.loginAction} method="post">
                                 <div className={kcClsx("kcFormGroupClass")}>
                                     <input type="hidden" name="tryAnotherWay" value="on" />
-                                    <a
-                                        href="#"
+                                    <button
+                                        type="button"
                                         id="try-another-way"
-                                        onClick={e => {
-                                            e.preventDefault();
-                                            (document.getElementById("kc-select-try-another-way-form") as HTMLFormElement).requestSubmit();
+                                        onClick={() => {
+                                            (document.getElementById("kc-select-try-another-way-form") as HTMLFormElement).submit();
                                         }}
                                     >
                                         {msg("doTryAnotherWay")}
-                                    </a>
+                                    </button>
                                 </div>
                             </form>
                         )}
