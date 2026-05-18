@@ -4,7 +4,7 @@ A custom Keycloak Docker image with the [ORCID Identity Provider extension](http
 
 ## Features
 
-- Based on Keycloak 26.4
+- Based on Keycloak 26.6.1
 - Pre-installed ORCID Social Identity Provider extension
 - ORCID-specific user attribute mappers
 - ORCID theme with logo support
@@ -336,13 +336,13 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 ## Magic Link Extension Details
 
 - **Built from**: Source (included in this repository)
-- **Compatibility**: Keycloak 26.4+
+- **Compatibility**: Keycloak 26.6.1+
 - **Features**: Passwordless authentication via email links
 
 ## Auto-Username Extension Details
 
 - **Built from**: Source (included in this repository)
-- **Compatibility**: Keycloak 26.4+
+- **Compatibility**: Keycloak 26.6.1+
 - **Features**: Automatic username generation for new users
 
 ## Avatar (Gravatar) for Clients

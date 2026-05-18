@@ -21,7 +21,7 @@ RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid
   mvn clean package -DskipTests
 
 # Final stage
-FROM quay.io/keycloak/keycloak:26.5
+FROM quay.io/keycloak/keycloak:26.6.1
 
 # Copy keycloak-orcid from builder
 COPY --from=builder /build/keycloak-orcid/target/keycloak-orcid.jar /opt/keycloak/providers/
