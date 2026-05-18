@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.keycloak.email.EmailTemplateProvider;
+import org.keycloak.email.EmailSenderProvider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,10 +187,12 @@ class MagicLinkAuthenticatorTest {
         when(context.getAuthenticatorConfig()).thenReturn(config);
         when(config.getConfig()).thenReturn(configMap);
         when(context.getRealm()).thenReturn(realm);
-        when(realm.getGroupsStream()).thenReturn(Stream.of(group));
+        // Return a fresh stream on every call: isDomainAllowed is invoked twice
+        // (early domain check + shouldCreateUserByDomain) when the domain is allowed.
+        when(realm.getGroupsStream()).thenAnswer(inv -> Stream.of(group));
         when(group.getName()).thenReturn("auto-create-domains");
         when(group.getAttributeStream("allowed-domains"))
-                .thenReturn(Stream.of("example.com", "company.org"));
+                .thenAnswer(inv -> Stream.of("example.com", "company.org"));
         when(session.users()).thenReturn(userProvider);
 
         // Mock username uniqueness check (no collision)
@@ -235,7 +238,7 @@ class MagicLinkAuthenticatorTest {
         configMap.put("createUser", "false");
 
         GroupModel group = mock(GroupModel.class);
-        UserProvider userProvider = mock(UserProvider.class);
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
 
         when(context.getHttpRequest()).thenReturn(httpRequest);
         when(httpRequest.getDecodedFormParameters()).thenReturn(formData);
@@ -246,14 +249,19 @@ class MagicLinkAuthenticatorTest {
         when(group.getName()).thenReturn("auto-create-domains");
         when(group.getAttributeStream("allowed-domains"))
                 .thenReturn(Stream.of("example.com", "company.org"));
-        when(session.users()).thenReturn(userProvider);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+        when(realm.getSmtpConfig()).thenReturn(new HashMap<>());
 
         // Execute
         authenticator.action(context);
 
-        // Verify user was NOT created
-        verify(userProvider, never()).addUser(any(), anyString());
-        // Should show email sent page without revealing user doesn't exist
+        // Verify notification email was sent to the user's address
+        try {
+            verify(emailSender).send(any(), eq(email), anyString(), anyString(), anyString());
+        } catch (org.keycloak.email.EmailException e) {
+            fail("EmailException should not be thrown in verify: " + e.getMessage());
+        }
+        // Should show email sent page
         verify(context).challenge(any(Response.class));
     }
 
@@ -269,7 +277,7 @@ class MagicLinkAuthenticatorTest {
         configMap.put("allowedDomainsGroup", "nonexistent-group");
         configMap.put("createUser", "false");
 
-        UserProvider userProvider = mock(UserProvider.class);
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
 
         when(context.getHttpRequest()).thenReturn(httpRequest);
         when(httpRequest.getDecodedFormParameters()).thenReturn(formData);
@@ -277,13 +285,14 @@ class MagicLinkAuthenticatorTest {
         when(config.getConfig()).thenReturn(configMap);
         when(context.getRealm()).thenReturn(realm);
         when(realm.getGroupsStream()).thenReturn(Stream.empty());
-        when(session.users()).thenReturn(userProvider);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+        when(realm.getSmtpConfig()).thenReturn(new HashMap<>());
 
         // Execute
         authenticator.action(context);
 
-        // Verify user was NOT created
-        verify(userProvider, never()).addUser(any(), anyString());
+        // Should show email sent page (group misconfigured → domain treated as not
+        // allowed)
         verify(context).challenge(any(Response.class));
     }
 }

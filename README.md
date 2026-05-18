@@ -220,6 +220,20 @@ Now users with email addresses from `example.com` or `company.org` will be autom
 - System creates: Username `usr_k9m2a7p3` with email `john.doe@example.com`
 - Email verified: Automatically set to true (verified via magic link)
 
+#### Notification for Unregistered Domains
+
+When a user enters an email address whose domain is **not** in the allowed list, the authenticator still shows the normal "Check your email" page (to avoid revealing whether the domain is registered), but sends a notification email to the address with the following message:
+
+> Your institution has no access. Please contact your university library and ask them to subscribe. As soon as they do, the platform will immediately become available to you through your institutional email address.
+
+This behaviour applies regardless of whether the user already has an account. The notification is sent using the realm's configured SMTP settings. No user account is created for unregistered domains.
+
+**Example:**
+- User enters: `jane.doe@unknown-university.edu`
+- System checks: Domain `unknown-university.edu` is **not** in allowed list ✗
+- System sends: Notification email to `jane.doe@unknown-university.edu`
+- Login page shows: Normal "Check your email" message (no indication of failure)
+
 ### Testing
 
 1. Go to your application's login page

@@ -10,6 +10,7 @@ import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.common.util.Time;
 import org.keycloak.email.EmailException;
+import org.keycloak.email.EmailSenderProvider;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
@@ -72,6 +73,17 @@ public class MagicLinkAuthenticator implements Authenticator {
 
     email = email.trim().toLowerCase();
 
+    // Check domain restriction FIRST if configured so the notification email is
+    // sent regardless of whether the user account exists.
+    if (isAllowedDomainsConfigured(context) && !isDomainAllowed(context, email)) {
+      String domain = extractDomain(email);
+      logger.warnf("Magic Link: Domain not allowed, sending notification - email=%s, domain=%s",
+          email, domain);
+      sendDomainNotAllowedEmail(context, email);
+      showEmailSentPage(context);
+      return;
+    }
+
     // Find or create user
     UserModel user = KeycloakModelUtils.findUserByNameOrEmail(
         context.getSession(),
@@ -96,17 +108,6 @@ public class MagicLinkAuthenticator implements Authenticator {
       context.getEvent().user(user).error(Errors.USER_DISABLED);
       logger.debugf("Magic Link: User disabled - userId=%s, email=%s", user.getId(), email);
       showEmailSentPage(context);
-      return;
-    }
-
-    // Check domain restriction ONLY if allowedDomainsGroup is configured
-    // If not configured, all domains are allowed (no restriction)
-    // This ensures domain validation only when explicitly enabled
-    if (isAllowedDomainsConfigured(context) && !isDomainAllowed(context, email)) {
-      String domain = extractDomain(email);
-      logger.warnf("Magic Link: Domain not allowed - email=%s, domain=%s, userId=%s",
-          email, domain, user.getId());
-      showEmailSentPage(context); // Don't reveal domain restriction to user
       return;
     }
 
@@ -310,6 +311,23 @@ public class MagicLinkAuthenticator implements Authenticator {
         link.length(), user.getId());
 
     return link;
+  }
+
+  protected void sendDomainNotAllowedEmail(AuthenticationFlowContext context, String email) {
+    String subject = "Platform Access Information";
+    String textBody = "Your institution has no access. Please contact your university library "
+        + "and ask them to subscribe. As soon as they do, the platform will immediately "
+        + "become available to you through your institutional email address.";
+    String htmlBody = "<p>" + textBody + "</p>";
+
+    try {
+      EmailSenderProvider emailSender = context.getSession().getProvider(EmailSenderProvider.class);
+      Map<String, String> smtpConfig = context.getRealm().getSmtpConfig();
+      emailSender.send(smtpConfig, email, subject, textBody, htmlBody);
+      logger.infof("Magic Link: Sent domain-not-allowed notification - email=%s", email);
+    } catch (EmailException e) {
+      logger.warnf(e, "Magic Link: Failed to send domain-not-allowed notification - email=%s", email);
+    }
   }
 
   protected void sendMagicLinkEmail(AuthenticationFlowContext context, UserModel user, String link)
