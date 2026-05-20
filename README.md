@@ -310,12 +310,13 @@ add_header Content-Security-Policy "
 ";
 ```
 
-Alternatively, set Keycloak environment variables:
+Alternatively, override Keycloak's built-in CSP header with a single environment variable that includes all required directives:
 
 ```bash
-KC_SPI_CONTENT_SECURITY_POLICY_SCRIPT_SRC="'self' https://challenges.cloudflare.com"
-KC_SPI_CONTENT_SECURITY_POLICY_FRAME_SRC="'self' https://challenges.cloudflare.com"
+KC_SPI_SECURITY_HEADERS_DEFAULT_CONTENT_SECURITY_POLICY="frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; object-src 'none'; script-src 'self' https://challenges.cloudflare.com"
 ```
+
+> **Note:** This replaces Keycloak's entire default CSP. The directives `frame-ancestors 'self'` and `object-src 'none'` are Keycloak's own defaults and must be preserved. Setting only `frame-src` or `script-src` via separate variables is not supported.
 
 ### Optional: IP Allowlist / Blocklist
 
