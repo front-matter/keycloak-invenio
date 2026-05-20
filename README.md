@@ -10,6 +10,7 @@ A custom Keycloak Docker image with the [ORCID Identity Provider extension](http
 - ORCID theme with logo support
 - Magic Link passwordless authentication
 - Automatic username generation for new users
+- Cloudflare Turnstile bot protection
 - Custom theme built with Keycloakify
 - Automated builds via GitHub Actions
 - Published to GitHub Container Registry
@@ -270,6 +271,85 @@ Magic Link authentication requires a valid email address. Make sure:
 4. Monitor authentication logs for suspicious activity
 5. Ensure users understand not to share magic links
 
+## Cloudflare Turnstile Bot Protection
+
+This image includes the [zymlabs/keycloak-cloudflare-turnstile-provider](https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider) extension, which adds Cloudflare Turnstile CAPTCHA verification to authentication flows to protect against bots and credential-stuffing attacks.
+
+### Prerequisites
+
+1. A Cloudflare account with Turnstile enabled
+2. Go to [Cloudflare Dashboard → Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile)
+3. Create a new site and copy the **Site Key** and **Secret Key**
+
+### Configure the Authentication Flow
+
+Two integration approaches are available: **Separate Page** (works with any theme, no theme changes needed) and **Invenio Theme** (widget rendered inline in the login form).
+
+#### Option 1: Separate Page (theme-agnostic)
+
+A standalone verification page is shown before the login form:
+
+1. Go to **Authentication** → **Flows**
+2. Copy the **Browser** flow (Actions → Duplicate)
+3. In the copied flow, click **Add execution**
+4. Select **Cloudflare Turnstile** (the Separate Page variant) → **Add**
+5. Move the execution to the **top** of the flow (before Username/Password)
+6. Set it to **REQUIRED**
+7. Click the ⚙️ icon to configure:
+   - **Site Key**: your Cloudflare Turnstile site key
+   - **Secret Key**: your Cloudflare Turnstile secret key
+   - **Widget Mode**: `managed` (default — shows challenge only when needed)
+   - **Fail Mode**: `FAIL_CLOSED` (recommended for production)
+8. Go to **Authentication** → **Bindings** and set this flow as the **Browser Flow**
+
+#### Option 2: Inline Widget in the Invenio Theme
+
+The Invenio Keycloakify theme natively renders the Turnstile widget inside the login form, between the password field and the submit button. This requires setting the implementation method to `CUSTOM_THEME`:
+
+1. Go to **Authentication** → **Flows**
+2. Copy the **Browser** flow (Actions → Duplicate)
+3. Expand the **Username Password Form** subflow
+4. Click **Add execution** within the subflow
+5. Select **Cloudflare Turnstile - Login (Custom Theme)** → **Add**
+6. Set it to **REQUIRED**
+7. Click the ⚙️ icon to configure:
+   - **Site Key**: your Cloudflare Turnstile site key
+   - **Secret Key**: your Cloudflare Turnstile secret key
+   - **Implementation Method**: `CUSTOM_THEME`
+   - **Widget Mode**: `managed`
+   - **Fail Mode**: `FAIL_CLOSED`
+8. Go to **Authentication** → **Bindings** and set this flow as the **Browser Flow**
+
+The widget is rendered conditionally: it only appears when the provider sets `turnstileRequired = true`. If the execution is not configured or an IP is on the allowlist, the login form is shown unchanged.
+
+### Configure Content Security Policy
+
+The Turnstile widget loads scripts from Cloudflare. Add the following CSP headers in your reverse proxy (Nginx, Caddy, etc.):
+
+```nginx
+add_header Content-Security-Policy "
+  script-src 'self' https://challenges.cloudflare.com;
+  frame-src 'self' https://challenges.cloudflare.com;
+  connect-src 'self' https://challenges.cloudflare.com;
+";
+```
+
+Alternatively, set Keycloak environment variables:
+
+```bash
+KC_SPI_CONTENT_SECURITY_POLICY_SCRIPT_SRC="'self' https://challenges.cloudflare.com"
+KC_SPI_CONTENT_SECURITY_POLICY_FRAME_SRC="'self' https://challenges.cloudflare.com"
+```
+
+### Optional: IP Allowlist / Blocklist
+
+- **IP Allowlist**: Enter IP ranges (CIDR notation) to skip verification for trusted networks (e.g., internal office IPs): `192.168.0.0/16,10.0.0.0/8`
+- **IP Blocklist**: Enter IP ranges to unconditionally block before any verification attempt
+
+### Audit Logging
+
+When **Record Verifications** is enabled (default), all verification attempts are stored in a `cloudflare_turnstile_check` table in the Keycloak database. Verification events are also written to Keycloak's event log (visible under **Events** → **Login Events** in the Admin Console).
+
 ## Metrics (Prometheus & Grafana)
 
 The image is built with `--metrics-enabled=true` and `--health-enabled=true`, so two extra endpoints are available on the **management port 9000** (not the public port 8080):
@@ -344,6 +424,13 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 - **Built from**: Source (included in this repository)
 - **Compatibility**: Keycloak 26.6.1+
 - **Features**: Automatic username generation for new users
+
+## Cloudflare Turnstile Extension Details
+
+- **Version**: 0.1.0-alpha.77
+- **Source**: [zymlabs/keycloak-cloudflare-turnstile-provider](https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider)
+- **Compatibility**: Keycloak 26.0+
+- **Features**: Bot protection via Cloudflare Turnstile CAPTCHA, IP allowlist/blocklist, audit logging
 
 ## Avatar (Gravatar) for Clients
 

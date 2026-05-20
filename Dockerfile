@@ -20,11 +20,19 @@ RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid
   sed -i 's/user\.setIdp(this);/\/\/ user.setIdp(this); \/\/ Removed for Keycloak 26.5+ compatibility/g' src/main/java/org/keycloak/social/orcid/OrcidIdentityProvider.java && \
   mvn clean package -DskipTests
 
+# Clone and build Cloudflare Turnstile provider
+RUN git clone --depth 1 --branch 0.1.0-alpha.77 https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider.git && \
+  cd keycloak-cloudflare-turnstile-provider && \
+  mvn clean package -DskipTests
+
 # Final stage
 FROM quay.io/keycloak/keycloak:26.6.1
 
 # Copy keycloak-orcid from builder
 COPY --from=builder /build/keycloak-orcid/target/keycloak-orcid.jar /opt/keycloak/providers/
+
+# Copy Cloudflare Turnstile provider
+COPY --from=builder /build/keycloak-cloudflare-turnstile-provider/target/zymlabs-cloudflare-turnstile-provider.jar /opt/keycloak/providers/
 
 # Copy custom auto-username mapper
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
@@ -56,6 +64,7 @@ RUN echo "============================================" && \
   test -f /opt/keycloak/providers/keycloak-orcid.jar && echo "✓ ORCID Identity Provider" || (echo "✗ ORCID provider missing" && exit 1) && \
   test -f /opt/keycloak/providers/auto-username.jar && echo "✓ Auto Username Mapper" || (echo "✗ Auto-username missing" && exit 1) && \
   test -f /opt/keycloak/providers/magic-link.jar && echo "✓ Magic Link Authenticator" || (echo "✗ Magic Link missing" && exit 1) && \
+  test -f /opt/keycloak/providers/zymlabs-cloudflare-turnstile-provider.jar && echo "✓ Cloudflare Turnstile Provider" || (echo "✗ Cloudflare Turnstile missing" && exit 1) && \
   test -f /opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
   echo "============================================" && \
   echo "All extensions installed successfully!"

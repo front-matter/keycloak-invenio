@@ -17,6 +17,13 @@ export type KcContextExtension = {
 
 export type KcContextExtensionPerPage = {
     "magic-link-sent.ftl": {};
+    "login.ftl": {
+        turnstileRequired?: boolean;
+        turnstileSkipped?: boolean;
+        turnstileSiteKey?: string;
+        turnstileTheme?: "light" | "dark" | "auto";
+        turnstileMode?: "managed" | "non-interactive" | "invisible";
+    };
 };
 
 export type KcContext = ExtendKcContext<KcContextExtension, KcContextExtensionPerPage>;

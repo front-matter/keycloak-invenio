@@ -18,12 +18,39 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
         classes
     });
 
-    const { social, realm, url, usernameHidden, login, auth, registrationDisabled, messagesPerField, enableWebAuthnConditionalUI, authenticators } =
-        kcContext;
+    const {
+        social,
+        realm,
+        url,
+        usernameHidden,
+        login,
+        auth,
+        registrationDisabled,
+        messagesPerField,
+        enableWebAuthnConditionalUI,
+        authenticators,
+        turnstileRequired,
+        turnstileSkipped,
+        turnstileSiteKey,
+        turnstileTheme,
+        turnstileMode
+    } = kcContext;
 
     const { msg, msgStr } = i18n;
 
     const [isLoginButtonDisabled, setIsLoginButtonDisabled] = useState(false);
+
+    useEffect(() => {
+        if (!turnstileRequired || turnstileSkipped || !turnstileSiteKey) return;
+        const script = document.createElement("script");
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+        return () => {
+            if (document.head.contains(script)) document.head.removeChild(script);
+        };
+    }, [turnstileRequired, turnstileSkipped, turnstileSiteKey]);
 
     const webAuthnButtonId = "authenticateWebAuthnButton";
 
@@ -204,6 +231,30 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                 )}
                             </div>
                         </div>
+
+                        {turnstileRequired && !turnstileSkipped && turnstileSiteKey && (
+                            <div className={kcClsx("kcFormGroupClass")}>
+                                <div style={{ display: "flex", justifyContent: "center" }}>
+                                    <div
+                                        className="cf-turnstile"
+                                        data-sitekey={turnstileSiteKey}
+                                        data-theme={turnstileTheme ?? "auto"}
+                                        data-size={turnstileMode === "invisible" ? "invisible" : "flexible"}
+                                        {...(turnstileMode === "non-interactive" ? { "data-appearance": "interaction-only" } : {})}
+                                        style={{ width: "100%" }}
+                                    />
+                                </div>
+                                {messagesPerField.existsError("cf-turnstile-response") && (
+                                    <span
+                                        className={kcClsx("kcInputErrorMessageClass")}
+                                        aria-live="polite"
+                                        dangerouslySetInnerHTML={{
+                                            __html: kcSanitize(messagesPerField.getFirstError("cf-turnstile-response"))
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        )}
 
                         <div id="kc-form-buttons" className={kcClsx("kcFormGroupClass")}>
                             <input type="hidden" id="id-hidden-input" name="credentialId" value={auth.selectedCredential} />
