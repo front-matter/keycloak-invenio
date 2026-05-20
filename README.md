@@ -300,23 +300,22 @@ The recommended approach is the **Separate Page** option — a standalone verifi
 
 ### Configure Content Security Policy
 
-The Turnstile widget loads scripts from Cloudflare. Add the following CSP headers in your reverse proxy (Nginx, Caddy, etc.):
+The Turnstile widget requires `https://challenges.cloudflare.com` to be allowed in the `frame-src` CSP directive. The [realm-config.json](realm-config.json) in this repository already includes the correct `browserSecurityHeaders` for Turnstile.
+
+If you are configuring an existing realm manually, update the Content Security Policy in the Admin Console:
+
+1. Go to **Realm Settings** → **Security Defenses**
+2. Set **Content Security Policy** to:
+   ```
+   frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; object-src 'none';
+   ```
+3. Click **Save**
+
+For reverse proxy deployments (Nginx, Caddy, etc.), add the header there instead:
 
 ```nginx
-add_header Content-Security-Policy "
-  script-src 'self' https://challenges.cloudflare.com;
-  frame-src 'self' https://challenges.cloudflare.com;
-  connect-src 'self' https://challenges.cloudflare.com;
-";
+add_header Content-Security-Policy "frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; object-src 'none';";
 ```
-
-Alternatively, override Keycloak's built-in CSP header with a single environment variable that includes all required directives:
-
-```bash
-KC_SPI_SECURITY_HEADERS_DEFAULT_CONTENT_SECURITY_POLICY="frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; object-src 'none'; script-src 'self' https://challenges.cloudflare.com"
-```
-
-> **Note:** This replaces Keycloak's entire default CSP. The directives `frame-ancestors 'self'` and `object-src 'none'` are Keycloak's own defaults and must be preserved. Setting only `frame-src` or `script-src` via separate variables is not supported.
 
 ### Optional: IP Allowlist / Blocklist
 
