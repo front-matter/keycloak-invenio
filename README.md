@@ -283,11 +283,7 @@ This image includes the [zymlabs/keycloak-cloudflare-turnstile-provider](https:/
 
 ### Configure the Authentication Flow
 
-Two integration approaches are available: **Separate Page** (works with any theme, no theme changes needed) and **Invenio Theme** (widget rendered inline in the login form).
-
-#### Option 1: Separate Page (theme-agnostic)
-
-A standalone verification page is shown before the login form:
+The recommended approach is the **Separate Page** option — a standalone verification page shown before the login form, which works without any theme changes:
 
 1. Go to **Authentication** → **Flows**
 2. Copy the **Browser** flow (Actions → Duplicate)
@@ -301,26 +297,6 @@ A standalone verification page is shown before the login form:
    - **Widget Mode**: `managed` (default — shows challenge only when needed)
    - **Fail Mode**: `FAIL_CLOSED` (recommended for production)
 8. Go to **Authentication** → **Bindings** and set this flow as the **Browser Flow**
-
-#### Option 2: Inline Widget in the Invenio Theme
-
-The Invenio Keycloakify theme natively renders the Turnstile widget inside the login form, between the password field and the submit button. This requires setting the implementation method to `CUSTOM_THEME`:
-
-1. Go to **Authentication** → **Flows**
-2. Copy the **Browser** flow (Actions → Duplicate)
-3. Expand the **Username Password Form** subflow
-4. Click **Add execution** within the subflow
-5. Select **Cloudflare Turnstile - Login (Custom Theme)** → **Add**
-6. Set it to **REQUIRED**
-7. Click the ⚙️ icon to configure:
-   - **Site Key**: your Cloudflare Turnstile site key
-   - **Secret Key**: your Cloudflare Turnstile secret key
-   - **Implementation Method**: `CUSTOM_THEME`
-   - **Widget Mode**: `managed`
-   - **Fail Mode**: `FAIL_CLOSED`
-8. Go to **Authentication** → **Bindings** and set this flow as the **Browser Flow**
-
-The widget is rendered conditionally: it only appears when the provider sets `turnstileRequired = true`. If the execution is not configured or an IP is on the allowlist, the login form is shown unchanged.
 
 ### Configure Content Security Policy
 
