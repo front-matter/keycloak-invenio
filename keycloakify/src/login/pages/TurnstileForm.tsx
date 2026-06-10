@@ -83,21 +83,11 @@ export default function TurnstileForm(props: PageProps<Extract<KcContext, { page
                 <div id="kc-form-wrapper">
                     <p style={{ textAlign: "center", marginBottom: "16px" }}>{msg("turnstileCheckingHuman")}</p>
 
-                    <div
-                        className="turnstile-container"
-                        style={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            marginBottom: "20px",
-                            minHeight: "100px"
-                        }}
-                    >
+                    <div className="turnstile-container" style={{ marginBottom: "20px" }}>
                         <div
                             id="turnstile-widget"
                             className="cf-turnstile"
-                            style={{ width: "100%", maxWidth: "400px" }}
+                            style={{ width: "100%" }}
                             data-sitekey={turnstileSiteKey}
                             data-theme={turnstileTheme}
                             data-size={turnstileMode === "invisible" ? "invisible" : "flexible"}
