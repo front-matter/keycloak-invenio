@@ -295,4 +295,152 @@ class MagicLinkAuthenticatorTest {
         // allowed)
         verify(context).challenge(any(Response.class));
     }
+
+    // --- sendDomainNotAllowedEmail tests ---
+
+    @Test
+    void testSendDomainNotAllowedEmail_usesReplyToWhenSet() throws Exception {
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
+        Map<String, String> smtp = new HashMap<>();
+        smtp.put("from", "noreply@example.com");
+        smtp.put("replyTo", "support@example.com");
+
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getDisplayName()).thenReturn("My Platform");
+        when(realm.getSmtpConfig()).thenReturn(smtp);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+
+        authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org");
+
+        // sent to the user
+        verify(emailSender).send(
+                eq(smtp),
+                eq("user@restricted.org"),
+                anyString(),
+                argThat(body -> body.contains("support@example.com")),
+                anyString());
+        // CC copy sent to support address, body includes the attempted email
+        verify(emailSender).send(
+                eq(smtp),
+                eq("support@example.com"),
+                anyString(),
+                argThat(body -> body.contains("user@restricted.org")),
+                anyString());
+    }
+
+    @Test
+    void testSendDomainNotAllowedEmail_fallsBackToFromWhenReplyToEmpty() throws Exception {
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
+        Map<String, String> smtp = new HashMap<>();
+        smtp.put("from", "noreply@example.com");
+        smtp.put("replyTo", "");
+
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getDisplayName()).thenReturn("My Platform");
+        when(realm.getSmtpConfig()).thenReturn(smtp);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+
+        authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org");
+
+        // sent to the user
+        verify(emailSender).send(
+                eq(smtp),
+                eq("user@restricted.org"),
+                anyString(),
+                argThat(body -> body.contains("noreply@example.com")),
+                anyString());
+        // CC copy sent to from address (replyTo was empty), body includes the attempted
+        // email
+        verify(emailSender).send(
+                eq(smtp),
+                eq("noreply@example.com"),
+                anyString(),
+                argThat(body -> body.contains("user@restricted.org")),
+                anyString());
+    }
+
+    @Test
+    void testSendDomainNotAllowedEmail_fallsBackToFromWhenReplyToAbsent() throws Exception {
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
+        Map<String, String> smtp = new HashMap<>();
+        smtp.put("from", "noreply@example.com");
+
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getDisplayName()).thenReturn("My Platform");
+        when(realm.getSmtpConfig()).thenReturn(smtp);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+
+        authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org");
+
+        // sent to the user
+        verify(emailSender).send(
+                eq(smtp),
+                eq("user@restricted.org"),
+                anyString(),
+                argThat(body -> body.contains("noreply@example.com")),
+                anyString());
+        // CC copy sent to from address (replyTo absent), body includes the attempted
+        // email
+        verify(emailSender).send(
+                eq(smtp),
+                eq("noreply@example.com"),
+                anyString(),
+                argThat(body -> body.contains("user@restricted.org")),
+                anyString());
+    }
+
+    @Test
+    void testSendDomainNotAllowedEmail_bodyContainsRealmName() throws Exception {
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
+        Map<String, String> smtp = new HashMap<>();
+        smtp.put("from", "noreply@example.com");
+
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getDisplayName()).thenReturn("Engineering Edge");
+        when(realm.getSmtpConfig()).thenReturn(smtp);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+
+        authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org");
+
+        verify(emailSender).send(
+                eq(smtp),
+                eq("user@restricted.org"),
+                anyString(),
+                argThat(body -> body.contains("Engineering Edge")),
+                anyString());
+    }
+
+    @Test
+    void testSendDomainNotAllowedEmail_noCcWhenRecipientMatchesCcAddress() throws Exception {
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
+        Map<String, String> smtp = new HashMap<>();
+        smtp.put("from", "user@restricted.org"); // same as recipient
+
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getDisplayName()).thenReturn("My Platform");
+        when(realm.getSmtpConfig()).thenReturn(smtp);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+
+        authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org");
+
+        // Only one send: no CC to avoid duplicate delivery to the same address
+        verify(emailSender, times(1)).send(any(), anyString(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void testSendDomainNotAllowedEmail_emailExceptionIsSuppressed() throws Exception {
+        EmailSenderProvider emailSender = mock(EmailSenderProvider.class);
+        Map<String, String> smtp = new HashMap<>();
+        smtp.put("from", "noreply@example.com");
+
+        when(context.getRealm()).thenReturn(realm);
+        when(realm.getDisplayName()).thenReturn("My Platform");
+        when(realm.getSmtpConfig()).thenReturn(smtp);
+        when(session.getProvider(EmailSenderProvider.class)).thenReturn(emailSender);
+        doThrow(new org.keycloak.email.EmailException("SMTP error"))
+                .when(emailSender).send(any(), anyString(), anyString(), anyString(), anyString());
+
+        // Must not throw
+        assertDoesNotThrow(() -> authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org"));
+    }
 }

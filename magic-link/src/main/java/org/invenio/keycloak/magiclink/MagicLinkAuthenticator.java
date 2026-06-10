@@ -317,17 +317,39 @@ public class MagicLinkAuthenticator implements Authenticator {
   }
 
   protected void sendDomainNotAllowedEmail(AuthenticationFlowContext context, String email) {
+    String realmName = context.getRealm().getDisplayName();
+    String contactAddress = replyToOrFrom(context.getRealm());
+
     String subject = "Platform Access Information";
-    String textBody = "Your institution has no access. Please contact your university library "
-        + "and ask them to subscribe. As soon as they do, the platform will immediately "
-        + "become available to you through your institutional email address.";
-    String htmlBody = "<p>" + textBody + "</p>";
+    String textBody = "Someone has attempted to log in to " + realmName
+        + " using this email address."
+        + " If this was not you then you can ignore this email.\n"
+        + "\n"
+        + "Unfortunately your institution does not have access to this resource."
+        + " Please contact your university library and ask them to subscribe."
+        + " As soon as they do, the platform will immediately become available to you"
+        + " through your institutional email address.\n"
+        + "\n"
+        + "If you feel this is an error, please contact us at "
+        + contactAddress + ".";
+    String htmlBody = "<p>" + textBody.replace("\n", "</p><p>") + "</p>";
+
+    String ccTextBody = "A login attempt was made on " + realmName
+        + " using the email address " + email + "."
+        + " The domain is not in the allowed list.\n"
+        + "\n"
+        + "A notification email has been sent to " + email + ".";
+    String ccHtmlBody = "<p>" + ccTextBody.replace("\n", "</p><p>") + "</p>";
 
     try {
       EmailSenderProvider emailSender = context.getSession().getProvider(EmailSenderProvider.class);
       Map<String, String> smtpConfig = context.getRealm().getSmtpConfig();
       emailSender.send(smtpConfig, email, subject, textBody, htmlBody);
       logger.infof("Magic Link: Sent domain-not-allowed notification - email=%s", email);
+      if (!contactAddress.isEmpty() && !contactAddress.equalsIgnoreCase(email)) {
+        emailSender.send(smtpConfig, contactAddress, subject, ccTextBody, ccHtmlBody);
+        logger.infof("Magic Link: Sent domain-not-allowed CC notification - ccAddress=%s", contactAddress);
+      }
     } catch (EmailException e) {
       logger.warnf(e, "Magic Link: Failed to send domain-not-allowed notification - email=%s", email);
     }
@@ -468,6 +490,12 @@ public class MagicLinkAuthenticator implements Authenticator {
 
   private boolean shouldCreateUserByDomain(AuthenticationFlowContext context, String email) {
     return isDomainAllowed(context, email);
+  }
+
+  private static String replyToOrFrom(RealmModel realm) {
+    Map<String, String> smtp = realm.getSmtpConfig();
+    String replyTo = smtp.getOrDefault("replyTo", "").trim();
+    return replyTo.isEmpty() ? smtp.getOrDefault("from", "") : replyTo;
   }
 
   private String extractDomain(String email) {
