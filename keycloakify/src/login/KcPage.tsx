@@ -11,6 +11,7 @@ const UserProfileFormFields = lazy(
 );
 const Login = lazy(() => import("./pages/Login"));
 const MagicLinkSent = lazy(() => import("./pages/MagicLinkSent"));
+const TurnstileForm = lazy(() => import("./pages/TurnstileForm"));
 
 const doMakeUserConfirmPassword = true;
 
@@ -34,6 +35,14 @@ export default function KcPage(props: { kcContext: KcContext }) {
                     case "magic-link-sent.ftl":
                         return (
                             <MagicLinkSent
+                                {...{ kcContext, i18n, classes }}
+                                Template={Template}
+                                doUseDefaultCss={true}
+                            />
+                        );
+                    case "turnstile-form.ftl":
+                        return (
+                            <TurnstileForm
                                 {...{ kcContext, i18n, classes }}
                                 Template={Template}
                                 doUseDefaultCss={true}

@@ -10,6 +10,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         // WARNING: You can't import the translation from external files
         en: {
             usernameOrEmail: "Email",
+            turnstileCheckingHuman: "Checking that you are human:",
             "magic-link-authenticator-display-name": "Email link",
             "magic-link-authenticator-help-text": "Get a one-time sign-in link by email.",
             magicLinkLoginTitle: "Sign in via email link",
@@ -33,6 +34,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         // cspell: disable
         de: {
             usernameOrEmail: "Email",
+            turnstileCheckingHuman: "Überprüfung, ob Sie ein Mensch sind:",
             "magic-link-authenticator-display-name": "Login-Link per E-Mail",
             "magic-link-authenticator-help-text": "Erhalten Sie einen einmaligen Anmeldelink per E-Mail.",
             magicLinkLoginTitle: "Anmeldung per E-Mail-Link",
@@ -55,6 +57,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         fr: {
             usernameOrEmail: "Email",
+            turnstileCheckingHuman: "Vérification que vous êtes humain :",
             "magic-link-authenticator-display-name": "Lien par email",
             "magic-link-authenticator-help-text": "Recevez un lien de connexion à usage unique par email.",
             magicLinkLoginTitle: "Connexion via lien email",
@@ -77,6 +80,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         es: {
             usernameOrEmail: "Email",
+            turnstileCheckingHuman: "Verificando que eres humano:",
             "magic-link-authenticator-display-name": "Enlace por correo",
             "magic-link-authenticator-help-text": "Recibe un enlace de inicio de sesión de un solo uso por correo.",
             magicLinkLoginTitle: "Iniciar sesión con enlace por correo",
@@ -99,6 +103,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         cs: {
             usernameOrEmail: "Email",
+            turnstileCheckingHuman: "Ověřujeme, že jste člověk:",
             "magic-link-authenticator-display-name": "Odkaz e-mailem",
             "magic-link-authenticator-help-text": "Získejte jednorázový přihlašovací odkaz e-mailem.",
             magicLinkLoginTitle: "Přihlášení prostřednictvím e-mailového odkazu",
@@ -121,6 +126,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         fi: {
             usernameOrEmail: "Sähköposti",
+            turnstileCheckingHuman: "Tarkistetaan, että olet ihminen:",
             "magic-link-authenticator-display-name": "Sähköpostilinkki",
             "magic-link-authenticator-help-text": "Saat kertakäyttöisen kirjautumislinkin sähköpostitse.",
             magicLinkLoginTitle: "Kirjaudu sähköpostilinkin kautta",
@@ -143,6 +149,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         sv: {
             usernameOrEmail: "E-post",
+            turnstileCheckingHuman: "Kontrollerar att du är mänsklig:",
             "magic-link-authenticator-display-name": "E-postlänk",
             "magic-link-authenticator-help-text": "Få en engångsinloggningslänk via e-post.",
             magicLinkLoginTitle: "Logga in via e-postlänk",
@@ -165,6 +172,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         tr: {
             usernameOrEmail: "E-posta",
+            turnstileCheckingHuman: "İnsan olduğunuz doğrulanıyor:",
             "magic-link-authenticator-display-name": "E-posta bağlantısı",
             "magic-link-authenticator-help-text": "E-posta ile tek kullanımlık giriş bağlantısı alın.",
             magicLinkLoginTitle: "E-posta bağlantısı ile giriş yap",
@@ -187,6 +195,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         "zh-CN": {
             usernameOrEmail: "邮箱",
+            turnstileCheckingHuman: "正在验证您是人类：",
             "magic-link-authenticator-display-name": "邮箱链接",
             "magic-link-authenticator-help-text": "通过邮箱获取一次性登录链接。",
             magicLinkLoginTitle: "通过邮箱链接登录",
@@ -209,6 +218,7 @@ const { useI18n, ofTypeI18n } = i18nBuilder
         },
         ja: {
             usernameOrEmail: "メールアドレス",
+            turnstileCheckingHuman: "人間であることを確認中：",
             "magic-link-authenticator-display-name": "メールリンク",
             "magic-link-authenticator-help-text": "メールで使い捨てのログインリンクを取得します。",
             magicLinkLoginTitle: "メールリンクでログイン",

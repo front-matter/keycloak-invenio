@@ -18,7 +18,13 @@ const kcContextExtension: KcContextExtension = {
     }
 };
 const kcContextExtensionPerPage: KcContextExtensionPerPage = {
-    "magic-link-sent.ftl": {}
+    "magic-link-sent.ftl": {},
+    "turnstile-form.ftl": {
+        turnstileSiteKey: "1x00000000000000000000AA",
+        turnstileMode: "managed",
+        turnstileTheme: "auto",
+        enableDebugLogging: false
+    }
 };
 
 export const { getKcContextMock } = createGetKcContextMock({
