@@ -32,7 +32,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
     const { realm, auth, url, message, isAppInitiatedAction } = kcContext;
 
     useEffect(() => {
-        document.title = documentTitle ?? msgStr("loginTitle", realm.displayName);
+        document.title = documentTitle ?? msgStr("loginTitle", realm?.displayName ?? "");
     }, []);
 
     useSetClassName({
@@ -55,10 +55,10 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
         <div className={kcClsx("kcLoginClass")}>
             <div id="kc-header" className={kcClsx("kcHeaderClass")}>
                 <div id="kc-header-wrapper" className={kcClsx("kcHeaderWrapperClass")}>
-                    {realm.attributes?.logoUrl ? (
-                        <img src={realm.attributes.logoUrl} alt={realm.displayName} className="kc-logo" />
+                    {realm?.attributes?.logoUrl ? (
+                        <img src={realm.attributes.logoUrl} alt={realm?.displayName ?? ""} className="kc-logo" />
                     ) : (
-                        msg("loginTitleHtml", realm.displayNameHtml)
+                        msg("loginTitleHtml", realm?.displayNameHtml ?? "")
                     )}
                 </div>
             </div>
