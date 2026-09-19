@@ -127,11 +127,11 @@ Edit `templates/magic-link.ftl`:
 ```html
 <#import "template.ftl" as layout>
 <@layout.emailLayout>
-    <p>${kcSanitize(msg("magicLinkEmailBody"))?no_esc}</p>
+    <p>${kcSanitize(msg("magicLinkEmailBody", linkExpiration))?no_esc}</p>
     <p>
         <a href="${link}">${msg("magicLinkButton")}</a>
     </p>
-    <p>${msg("magicLinkExpiration", linkExpiration)}</p>
+    <p>${msg("magicLinkSecurity")}</p>
 </@layout.emailLayout>
 ```
 
@@ -152,7 +152,10 @@ Add messages to `messages/messages_en.properties`:
 magicLinkSubject=Your login link
 magicLinkEmailBody=Click the button to log in. Valid for {0} minutes.
 magicLinkButton=Log In
+magicLinkSecurity=If you didn''t request this login link, you can safely ignore this email.
 ```
+
+Messages are formatted with Java `MessageFormat`, so write a literal apostrophe as `''`.
 
 For additional languages, create `messages_de.properties`, `messages_fr.properties`, etc.
 
