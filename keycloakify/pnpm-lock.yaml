@@ -18,8 +18,8 @@ importers:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)
       keycloakify:
-        specifier: ^11.13.6
-        version: 11.13.6
+        specifier: ^11.16.0
+        version: 11.16.0
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -1797,8 +1797,8 @@ packages:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
 
-  keycloakify@11.13.6:
-    resolution: {integrity: sha512-ZEk8ZoB2DEa50GX7DC8xBtDnLlNcGR4du2tfTibBDzPAdtMzsntHD0U67qDiJQVgqRpvSVELGZoZQVca76U0jA==}
+  keycloakify@11.16.0:
+    resolution: {integrity: sha512-j+iueRmXm/GpdXmyet/YEhQTdsxlptW9JJa6fOF0r/VXwR3+dxsg2NKqh9zNlwXl3LXdJdCkWpS40elEGWiCqQ==}
     hasBin: true
 
   keyv@4.5.4:
@@ -4375,7 +4375,7 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
-  keycloakify@11.13.6:
+  keycloakify@11.16.0:
     dependencies:
       tsafe: 1.8.12
 
