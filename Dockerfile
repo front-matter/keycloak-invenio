@@ -26,7 +26,7 @@ RUN git clone --depth 1 --branch 0.1.0-alpha.77 https://github.com/zymlabs/keycl
   mvn clean package -DskipTests
 
 # Final stage
-FROM quay.io/keycloak/keycloak:26.6.1
+FROM quay.io/keycloak/keycloak:26.7.4
 
 # Copy keycloak-orcid from builder
 COPY --from=builder /build/keycloak-orcid/target/keycloak-orcid.jar /opt/keycloak/providers/

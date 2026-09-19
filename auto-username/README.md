@@ -49,7 +49,7 @@ WORKDIR /build
 COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
-FROM quay.io/keycloak/keycloak:26.4
+FROM quay.io/keycloak/keycloak:26.7
 COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/providers/
 RUN /opt/keycloak/bin/kc.sh build
 ```
