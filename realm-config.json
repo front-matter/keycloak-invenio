@@ -28,12 +28,21 @@
   "identityProviders": [
     {
       "alias": "orcid",
-      "providerId": "orcid",
+      "providerId": "oidc",
       "enabled": true,
       "displayName": "ORCID",
       "config": {
         "clientId": "${env.ORCID_CLIENT_ID}",
-        "clientSecret": "${env.ORCID_CLIENT_SECRET}"
+        "clientSecret": "${env.ORCID_CLIENT_SECRET}",
+        "clientAuthMethod": "client_secret_post",
+        "issuer": "https://orcid.org",
+        "authorizationUrl": "https://orcid.org/oauth/authorize",
+        "tokenUrl": "https://orcid.org/oauth/token",
+        "userInfoUrl": "https://orcid.org/oauth/userinfo",
+        "jwksUrl": "https://orcid.org/oauth/jwks",
+        "useJwksUrl": "true",
+        "validateSignature": "true",
+        "defaultScope": "openid"
       }
     }
   ],

@@ -1,13 +1,11 @@
 # Keycloak with ORCID Integration and Magic Link Authentication
 
-A custom Keycloak Docker image with the [ORCID Identity Provider extension](https://github.com/eosc-kc/keycloak-orcid), Magic Link passwordless authenticator, and Automatic Username Generation extension pre-installed, designed for use with InvenioRDM and other research data management platforms.
+A custom Keycloak Docker image with a Magic Link passwordless authenticator and Automatic Username Generation extension pre-installed, designed for use with InvenioRDM and other research data management platforms. ORCID login is configured with Keycloak's built-in OpenID Connect provider.
 
 ## Features
 
 - Based on Keycloak 26.8.2
-- Pre-installed ORCID Social Identity Provider extension
-- ORCID-specific user attribute mappers
-- ORCID theme with logo support
+- ORCID login via Keycloak's built-in OpenID Connect provider
 - Magic Link passwordless authentication
 - Automatic username generation for new users
 - Cloudflare Turnstile bot protection
@@ -30,24 +28,30 @@ Access Keycloak at http://localhost:8080
 
 ### Setting up ORCID Identity Provider
 
-1. Log in to the Keycloak Admin Console
-2. Select your realm
-3. Navigate to **Identity Providers** → **Add provider** → **ORCID**
-4. You'll need to register your application with ORCID:
+ORCID is an OpenID Connect provider, so Keycloak's built-in **OpenID Connect v1.0**
+provider handles it — no extension required.
+
+1. Register your application with ORCID:
    - Visit [ORCID Developer Tools](https://orcid.org/developer-tools)
    - Click "Register for the free ORCID public API"
-   - Configure your application with the Redirect URI from Keycloak
-   - Format: `https://<keycloak-url>/realms/<realm>/broker/orcid/endpoint`
-5. Enter the Client ID and Client Secret from ORCID into Keycloak
-6. Save the configuration
+   - Set the Redirect URI to `https://<keycloak-url>/realms/<realm>/broker/orcid/endpoint`
+2. Log in to the Keycloak Admin Console and select your realm
+3. Navigate to **Identity Providers** → **Add provider** → **OpenID Connect v1.0**
+4. Set the **Alias** to `orcid` — the login theme keys the ORCID button and icon off this
+   alias — and the **Display name** to `ORCID`
+5. Set **Discovery endpoint** to `https://orcid.org/.well-known/openid-configuration`,
+   which fills in the authorization, token, userinfo and JWKS URLs automatically
+6. Enter the Client ID and Client Secret from ORCID
+7. Set **Client authentication** to *Client secret sent as post* — ORCID advertises
+   `client_secret_post` as its only supported method
+8. Save the configuration
 
-### Optional: ORCID Theme
+The same configuration is in [realm-config.json](realm-config.json) with the endpoints
+spelled out, for deployments that import the realm.
 
-To use the ORCID theme with the logo:
-
-1. Go to **Realm Settings** → **Themes**
-2. Set Login Theme to `orcid-theme`
-3. Save changes
+**Note on claims:** ORCID releases only `sub` (the ORCID iD), `name`, `given_name` and
+`family_name`, and its only scope is `openid`. No email address is returned, so users who
+sign in through ORCID arrive without one.
 
 ### Custom Login Logo
 
@@ -383,12 +387,6 @@ git push origin v1.0.0
 
 This Keycloak image is designed to work seamlessly with InvenioRDM. Configure InvenioRDM to use this Keycloak instance as an OAuth provider with ORCID authentication.
 
-## ORCID Extension Details
-
-- **Version**: 1.4.0
-- **Source**: [eosc-kc/keycloak-orcid](https://github.com/eosc-kc/keycloak-orcid)
-- **Compatibility**: Keycloak 25.0+
-
 ## Magic Link Extension Details
 
 - **Built from**: Source (included in this repository)
@@ -461,12 +459,10 @@ After this, clients will receive `picture` by default (no need to request `scope
 ## License
 
 - Keycloak: Apache License 2.0
-- ORCID Extension: See [extension license](https://github.com/eosc-kc/keycloak-orcid/blob/main/LICENCE)
 - This repository: MIT License
 
 ## Support
 
 For issues related to:
 - This Docker image: Open an issue in this repository
-- ORCID extension: Visit [eosc-kc/keycloak-orcid](https://github.com/eosc-kc/keycloak-orcid/issues)
 - Keycloak itself: Visit [Keycloak documentation](https://www.keycloak.org/documentation)
