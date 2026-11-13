@@ -44,8 +44,8 @@
       "enabled": true,
       "displayName": "ORCID",
       "config": {
-        "clientId": "${env.ORCID_CLIENT_ID}",
-        "clientSecret": "${env.ORCID_CLIENT_SECRET}",
+        "clientId": "CHANGE_ME_ORCID_CLIENT_ID",
+        "clientSecret": "CHANGE_ME_ORCID_CLIENT_SECRET",
         "clientAuthMethod": "client_secret_post",
         "issuer": "https://orcid.org",
         "authorizationUrl": "https://orcid.org/oauth/authorize",
@@ -63,8 +63,8 @@
       "clientId": "invenio-app",
       "enabled": true,
       "publicClient": true,
-      "redirectUris": ["${env.INVENIO_URL:http://localhost:3000}/*"],
-      "webOrigins": ["${env.INVENIO_URL:http://localhost:3000}"],
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
       "protocol": "openid-connect",
       "protocolMappers": [
         {

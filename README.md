@@ -47,11 +47,48 @@ provider handles it — no extension required.
 8. Save the configuration
 
 The same configuration is in [realm-config.json](realm-config.json) with the endpoints
-spelled out, for deployments that import the realm.
+spelled out, for deployments that import the realm. That file carries
+`CHANGE_ME_ORCID_CLIENT_ID` and `CHANGE_ME_ORCID_CLIENT_SECRET` placeholders — see
+[Realm import and credentials](#realm-import-and-credentials) below for why they are not
+environment variables, and how to fill them in.
 
 **Note on claims:** ORCID releases only `sub` (the ORCID iD), `name`, `given_name` and
 `family_name`, and its only scope is `openid`. No email address is returned, so users who
 sign in through ORCID arrive without one.
+
+### Realm import and credentials
+
+Keycloak's realm import does **not** expand environment variables or system properties.
+Verified against Keycloak 26.8.2: `${env.VAR}` is imported as that literal string, and
+`${env.VAR:default}` always resolves to `default`, with the environment variable ignored
+even when it is set. The same applies to `${some.system.property}`. Realm JSON therefore
+cannot carry secrets from the environment, and [realm-config.json](realm-config.json)
+uses explicit placeholder values instead.
+
+After importing the realm, set the ORCID credentials and the InvenioRDM URLs. In the
+Admin Console: **Identity Providers → orcid** for the credentials, and **Clients →
+invenio-app** for the redirect URI and web origin. Or with `kcadm`:
+
+```bash
+/opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8080 --realm master --user admin
+
+/opt/keycloak/bin/kcadm.sh update identity-provider/instances/orcid -r invenio \
+  -s "config.clientId=APP-XXXXXXXXXXXXXXXX" \
+  -s "config.clientSecret=$ORCID_CLIENT_SECRET"
+
+CID=$(/opt/keycloak/bin/kcadm.sh get clients -r invenio \
+  -q clientId=invenio-app --fields id --format csv --noquotes)
+/opt/keycloak/bin/kcadm.sh update "clients/$CID" -r invenio \
+  -s "redirectUris=[\"https://invenio.example.org/*\"]" \
+  -s "webOrigins=[\"https://invenio.example.org\"]"
+```
+
+To keep the client secret out of the realm file and out of shell history, Keycloak's
+vault can hold it instead: start with `--vault=file --vault-dir=/opt/keycloak/vault`,
+write the secret to `/opt/keycloak/vault/invenio_orcid-secret`, and set the identity
+provider's secret to `${vault.orcid-secret}`. Vault references are resolved at runtime,
+not at import.
 
 ### Custom Login Logo
 
