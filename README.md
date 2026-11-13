@@ -403,7 +403,7 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
 
 ## Cloudflare Turnstile Extension Details
 
-- **Version**: 0.1.0-alpha.77
+- **Version**: 0.1.0-alpha.116
 - **Source**: [zymlabs/keycloak-cloudflare-turnstile-provider](https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider)
 - **Compatibility**: Keycloak 26.0+
 - **Features**: Bot protection via Cloudflare Turnstile CAPTCHA, IP allowlist/blocklist, audit logging

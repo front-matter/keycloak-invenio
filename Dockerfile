@@ -21,7 +21,7 @@ RUN git clone --depth 1 --branch 1.4.0 https://github.com/eosc-kc/keycloak-orcid
   mvn clean package -DskipTests
 
 # Clone and build Cloudflare Turnstile provider
-RUN git clone --depth 1 --branch 0.1.0-alpha.77 https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider.git && \
+RUN git clone --depth 1 --branch 0.1.0-alpha.116 https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider.git && \
   cd keycloak-cloudflare-turnstile-provider && \
   mvn clean package -DskipTests
 
