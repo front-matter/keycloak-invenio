@@ -10,11 +10,5 @@
 **/.project
 **/.settings/
 
-# Node / frontend
-**/node_modules/
-**/.pnpm-store/
-keycloakify/dist/
-keycloakify/.vite/
-
 # VCS / misc
 **/*.log

@@ -31,8 +31,8 @@ COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/
 # Copy magic-link authenticator
 COPY --from=builder /build/magic-link/target/magic-link.jar /opt/keycloak/providers/
 
-# Copy Keycloakify theme JAR
-COPY ./keycloakify/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar /opt/keycloak/providers/
+# Copy the login and email theme "invenio"
+COPY theme/invenio/ /opt/keycloak/themes/invenio/
 
 # Copy realm configuration
 COPY realm-config.json /opt/keycloak/data/import/realm-config.json
@@ -55,6 +55,6 @@ RUN echo "============================================" && \
   test -f /opt/keycloak/providers/auto-username.jar && echo "✓ Auto Username Mapper" || (echo "✗ Auto-username missing" && exit 1) && \
   test -f /opt/keycloak/providers/magic-link.jar && echo "✓ Magic Link Authenticator" || (echo "✗ Magic Link missing" && exit 1) && \
   test -f /opt/keycloak/providers/zymlabs-cloudflare-turnstile-provider.jar && echo "✓ Cloudflare Turnstile Provider" || (echo "✗ Cloudflare Turnstile missing" && exit 1) && \
-  test -f /opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar && echo "✓ Keycloakify Theme" || (echo "✗ Theme missing" && exit 1) && \
+  test -f /opt/keycloak/themes/invenio/login/theme.properties && echo "✓ Theme invenio" || (echo "✗ Theme missing" && exit 1) && \
   echo "============================================" && \
   echo "All extensions installed successfully!"

@@ -1,9 +1,3 @@
-# Node modules
-keycloakify/node_modules
-
-# Build artifacts
-keycloakify/dist
-
 # IDE
 .vscode/
 .idea/

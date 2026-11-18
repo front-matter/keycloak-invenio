@@ -1,0 +1,72 @@
+/* Loaded after the parent theme's css/login.css (theme.properties). */
+
+/* Plain slate background instead of the Keycloak background image. */
+.login-pf body {
+  background: #64748b none !important;
+}
+
+/* Logo from the realm attribute logoUrl (template.ftl). */
+.kc-logo {
+  display: block;
+  max-width: 100%;
+  max-height: 60px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* ORCID iD icon on the ORCID sign-in button (kcLogoIdP-orcid). */
+.kc-icon-orcid {
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.25em;
+  background: url("../img/orcid.svg") no-repeat center / contain;
+}
+
+/* Space between social provider icons and their names, and between buttons. */
+.kc-social-provider-logo {
+  margin-right: 0.5rem;
+}
+
+.kc-social-item {
+  margin-bottom: 0.5rem;
+}
+
+/*
+ * Give inputs a border on all four sides. PatternFly 4 draws only a bottom
+ * border, which reads as an underline rather than a field.
+ */
+#kc-form input[type="text"],
+#kc-form input[type="email"],
+#kc-form input[type="password"],
+#kc-form input[type="tel"],
+#kc-form input[type="url"],
+#kc-form input[type="number"],
+#kc-form select,
+#kc-form textarea,
+#kc-form .pf-c-form-control {
+  border: 1px solid rgba(0, 0, 0, 0.28) !important;
+  box-shadow: none;
+}
+
+#kc-form input:focus,
+#kc-form select:focus,
+#kc-form textarea:focus,
+#kc-form .pf-c-form-control:focus {
+  border-color: rgba(59, 130, 246, 0.9) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+  outline: none;
+}
+
+/* Password visibility toggle next to the password input. */
+#kc-form .pf-c-input-group > .pf-c-button.pf-m-control,
+#kc-form .pf-c-input-group > .pf-c-button.pf-m-control:hover,
+#kc-form .pf-c-input-group > .pf-c-button.pf-m-control:focus {
+  border: 1px solid rgba(0, 0, 0, 0.28) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+#kc-form .pf-c-input-group > .pf-c-button.pf-m-control::after {
+  border: none;
+}

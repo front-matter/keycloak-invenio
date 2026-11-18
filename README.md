@@ -9,7 +9,7 @@ A custom Keycloak Docker image with a Magic Link passwordless authenticator and 
 - Magic Link passwordless authentication
 - Automatic username generation for new users
 - Cloudflare Turnstile bot protection
-- Custom theme built with Keycloakify
+- Custom login and email theme `invenio` (plain FreeMarker templates)
 - Automated builds via GitHub Actions
 - Published to GitHub Container Registry
 
@@ -423,6 +423,22 @@ git push origin v1.0.0
 ## Integration with InvenioRDM
 
 This Keycloak image is designed to work seamlessly with InvenioRDM. Configure InvenioRDM to use this Keycloak instance as an OAuth provider with ORCID authentication.
+
+## Theme Details
+
+- **Source**: [theme/invenio](theme/invenio), copied to `/opt/keycloak/themes/invenio`
+- **Login theme**: extends Keycloak's classic `keycloak` theme. It adds a slate
+  background, bordered inputs, the realm `logoUrl` logo in the header
+  ([template.ftl](theme/invenio/login/template.ftl)), an ORCID icon for the
+  identity provider with alias `orcid`, and message overrides (the magic-link
+  page labels its field "Email")
+- **Email theme**: extends Keycloak's `base` email theme with the HTML and
+  plain-text magic-link email
+- **Selecting it**: set the realm's login and email theme to `invenio`
+  (**Realm settings → Themes**), as [realm-config.json](realm-config.json) does
+- **Upgrading Keycloak**: [template.ftl](theme/invenio/login/template.ftl) is a
+  copy of the base template with a changed header; diff it against the new
+  version's `theme/base/login/template.ftl`
 
 ## Magic Link Extension Details
 
