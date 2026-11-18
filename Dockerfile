@@ -1,3 +1,7 @@
+# Keycloak version of the image. Release tags are v<KEYCLOAK_VERSION>.<revision>,
+# e.g. v26.8.2.0; the workflow checks that a tag matches this value.
+ARG KEYCLOAK_VERSION=26.8.2
+
 # Build stage - compile extensions
 FROM maven:3.9-eclipse-temurin-21 AS builder
 
@@ -26,7 +30,7 @@ RUN git clone --depth 1 --branch "$TURNSTILE_VERSION" https://github.com/zymlabs
   mvn clean package -DskipTests
 
 # Final stage
-FROM quay.io/keycloak/keycloak:26.8.2
+FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
 
 # Copy Cloudflare Turnstile provider
 COPY --from=builder /build/keycloak-cloudflare-turnstile-provider/target/zymlabs-cloudflare-turnstile-provider.jar /opt/keycloak/providers/

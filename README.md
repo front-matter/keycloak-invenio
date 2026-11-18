@@ -4,7 +4,7 @@ A custom Keycloak Docker image with a Magic Link passwordless authenticator and 
 
 ## Features
 
-- Based on Keycloak 26.8.2
+- Based on Keycloak 26.8.2, versioned as `<Keycloak version>.<revision>`, e.g. `26.8.2.0` (see [Versions](#versions))
 - ORCID login via Keycloak's built-in OpenID Connect provider
 - Magic Link passwordless authentication
 - Automatic username generation for new users
@@ -409,15 +409,27 @@ docker build -t keycloak-invenio:local .
 
 The repository includes automated builds that:
 
-- Build on every push to `main` branch (creates `latest` tag)
-- Build on version tags (e.g., `v1.0.0` creates versioned tags)
+- Build on every push to `main` branch (creates the `latest` and `main` tags)
+- Build on release tags (see below)
 - Publish to `ghcr.io/front-matter/keycloak-invenio`
+
+### Versions
+
+Image versions are the Keycloak version followed by a revision of this image:
+`26.8.2.0` is the first release on Keycloak 26.8.2, `26.8.2.1` the next one with
+changes to the extensions or theme. The revision starts again at `0` when
+Keycloak is upgraded. The Keycloak version is set once, as `KEYCLOAK_VERSION` in
+the [Dockerfile](Dockerfile).
+
+A release tag `v26.8.2.1` publishes the image tags `26.8.2.1` and `26.8.2`, which
+always points to the latest revision for that Keycloak version. The workflow
+rejects a tag whose Keycloak part differs from `KEYCLOAK_VERSION`.
 
 To create a new release:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v26.8.2.0
+git push origin v26.8.2.0
 ```
 
 ## Integration with InvenioRDM
