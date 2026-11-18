@@ -72,13 +72,14 @@
 
 /*
  * Card and controls with rounded corners and no coloured edges, as in
- * InvenioRDM's login page: no blue line on top of the card (login.css draws a
- * 4px primary-colour border-top), 6px corners on the card, 4px on inputs and
- * buttons.
+ * InvenioRDM's login page: no border (login.css draws a 4px primary-colour
+ * border-top) and no shadow on the card, 6px corners on the card, 4px on
+ * inputs and buttons.
  */
 .login-pf-page .card-pf {
   border: 0;
   border-radius: 6px;
+  box-shadow: none;
 }
 
 .login-pf-page .pf-c-button,
@@ -155,4 +156,31 @@
 /* No horizontal rule above "Or sign in with". */
 #kc-social-providers hr {
   display: none;
+}
+
+/*
+ * "Sign in with Passkey" (passkeys.ftl, a bare link in this theme) looks like
+ * the identity provider buttons: a transparent box with a light grey border,
+ * the label centred in the theme's text colour, and the same hover.
+ */
+#authenticateWebAuthnButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  margin-top: 0.5rem;
+  padding: 0 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--pf-global--Color--100);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+#authenticateWebAuthnButton:hover,
+#authenticateWebAuthnButton:focus {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: var(--pf-global--Color--100);
+  text-decoration: none;
 }
