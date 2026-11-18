@@ -62,3 +62,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # The release tag, or the commit for builds of main (theme.properties).
+          build-args: |
+            THEME_VERSION=${{ github.ref_type == 'tag' && github.ref_name || github.sha }}

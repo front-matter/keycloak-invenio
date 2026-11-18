@@ -14,6 +14,14 @@ WORKDIR /build
 COPY auto-username/ ./auto-username/
 RUN cd auto-username && mvn clean package -DskipTests
 
+# Theme, with the release in its stylesheet URL (theme.properties), so
+# browsers load the stylesheet of each release instead of a cached one.
+ARG THEME_VERSION=dev
+COPY theme/ ./theme/
+RUN case "$THEME_VERSION" in *[!A-Za-z0-9._-]*) echo "invalid THEME_VERSION" >&2; exit 1 ;; esac && \
+  sed -i "s/@THEME_VERSION@/$THEME_VERSION/" theme/invenio/login/theme.properties && \
+  grep -q "invenio.css?v=$THEME_VERSION" theme/invenio/login/theme.properties
+
 # Build magic-link authenticator
 COPY magic-link/ ./magic-link/
 RUN cd magic-link && mvn clean package -DskipTests
@@ -42,7 +50,7 @@ COPY --from=builder /build/auto-username/target/auto-username.jar /opt/keycloak/
 COPY --from=builder /build/magic-link/target/magic-link.jar /opt/keycloak/providers/
 
 # Copy the login and email theme "invenio"
-COPY theme/invenio/ /opt/keycloak/themes/invenio/
+COPY --from=builder /build/theme/invenio/ /opt/keycloak/themes/invenio/
 
 # Copy realm configuration
 COPY realm-config.json /opt/keycloak/data/import/realm-config.json
