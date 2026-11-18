@@ -288,8 +288,8 @@ signs in as before.
    Passwordless**, leaving **Set as default action** off so nobody is asked to add one
 
 Users then add passkeys in the Account Console under **Signing in** → **Passkeys**. On the
-sign-in page, the browser suggests saved passkeys in the email field, and a **Sign in with
-Passkey** button asks for one. A passkey is bound to the Keycloak host name, so it works
+sign-in page, the browser suggests saved passkeys in the email field, and a **Passkey**
+button below "Or sign in with" asks for one. A passkey is bound to the Keycloak host name, so it works
 for every application that signs in through this realm.
 
 With passkeys turned off, the page and the flow are unchanged.
@@ -461,14 +461,18 @@ This Keycloak image is designed to work seamlessly with InvenioRDM. Configure In
   background, bordered inputs, the realm `logoUrl` logo in the header
   ([template.ftl](theme/invenio/login/template.ftl)), an ORCID icon for the
   identity provider with alias `orcid`, and message overrides (the magic-link
-  page labels its field "Email")
+  page labels its field "Email"). The magic-link page
+  ([login-username.ftl](theme/invenio/login/login-username.ftl)) drops the empty
+  options row and lists the **Passkey** button with the identity providers
+  ([passkeys.ftl](theme/invenio/login/passkeys.ftl))
 - **Email theme**: extends Keycloak's `base` email theme with the HTML and
   plain-text magic-link email
 - **Selecting it**: set the realm's login and email theme to `invenio`
   (**Realm settings → Themes**), as [realm-config.json](realm-config.json) does
-- **Upgrading Keycloak**: [template.ftl](theme/invenio/login/template.ftl) is a
-  copy of the base template with a changed header; diff it against the new
-  version's `theme/base/login/template.ftl`
+- **Upgrading Keycloak**: [template.ftl](theme/invenio/login/template.ftl),
+  [login-username.ftl](theme/invenio/login/login-username.ftl) and
+  [passkeys.ftl](theme/invenio/login/passkeys.ftl) are changed copies of the base
+  templates; diff them against the new version's `theme/base/login/`
 
 ## Magic Link Extension Details
 

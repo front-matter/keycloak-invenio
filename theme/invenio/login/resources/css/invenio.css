@@ -159,11 +159,12 @@
 }
 
 /*
- * "Sign in with Passkey" (passkeys.ftl, a bare link in this theme) looks like
- * the identity provider buttons: a transparent box with a light grey border,
- * the label centred in the theme's text colour, and the same hover.
+ * The passkey button: on the email page it is one of the identity provider
+ * buttons (login-username.ftl); on the other pages (passkeys.ftl, a bare link
+ * in this theme) it looks like them: a transparent box with a light grey
+ * border, the label centred in the theme's text colour, and the same hover.
  */
-#authenticateWebAuthnButton {
+#authenticateWebAuthnButton:not(.kc-social-item) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,8 +179,8 @@
   text-decoration: none;
 }
 
-#authenticateWebAuthnButton:hover,
-#authenticateWebAuthnButton:focus {
+#authenticateWebAuthnButton:not(.kc-social-item):hover,
+#authenticateWebAuthnButton:not(.kc-social-item):focus {
   background-color: rgba(0, 0, 0, 0.03);
   color: var(--pf-global--Color--100);
   text-decoration: none;
