@@ -14,9 +14,15 @@ RUN cd auto-username && mvn clean package -DskipTests
 COPY magic-link/ ./magic-link/
 RUN cd magic-link && mvn clean package -DskipTests
 
-# Clone and build Cloudflare Turnstile provider
-RUN git clone --depth 1 --branch 0.1.0-alpha.116 https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider.git && \
+# Clone and build Cloudflare Turnstile provider. The tag is checked against its
+# commit, since a tag can be moved; update both together.
+ARG TURNSTILE_VERSION=0.1.0-alpha.116
+ARG TURNSTILE_COMMIT=75202a357f91da40969804358b6d197cbb848bc3
+RUN git clone --depth 1 --branch "$TURNSTILE_VERSION" https://github.com/zymlabs/keycloak-cloudflare-turnstile-provider.git && \
   cd keycloak-cloudflare-turnstile-provider && \
+  if [ "$(git rev-parse HEAD)" != "$TURNSTILE_COMMIT" ]; then \
+    echo "Turnstile $TURNSTILE_VERSION is not commit $TURNSTILE_COMMIT" >&2; exit 1; \
+  fi && \
   mvn clean package -DskipTests
 
 # Final stage
