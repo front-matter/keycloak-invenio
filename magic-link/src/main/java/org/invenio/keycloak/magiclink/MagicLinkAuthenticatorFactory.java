@@ -85,7 +85,7 @@ public class MagicLinkAuthenticatorFactory implements AuthenticatorFactory {
 
   @Override
   public Authenticator create(KeycloakSession session) {
-    return new MagicLinkAuthenticator();
+    return new MagicLinkAuthenticator(session);
   }
 
   @Override

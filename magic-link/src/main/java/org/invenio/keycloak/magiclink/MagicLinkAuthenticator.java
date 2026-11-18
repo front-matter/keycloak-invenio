@@ -8,12 +8,14 @@ import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.authentication.authenticators.browser.WebAuthnConditionalUIAuthenticator;
 import org.keycloak.common.util.Time;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
 import org.keycloak.email.EmailTemplateProvider;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
+import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -33,7 +35,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Magic Link Authenticator - sends email with one-time passwordless login link
+ * Magic Link Authenticator - sends email with one-time passwordless login link.
+ *
+ * <p>When passkeys are enabled in the realm (WebAuthn Passwordless Policy), the
+ * email form also offers the user's passkeys, as Keycloak's own username forms
+ * do: the browser suggests them in the email field (conditional UI) and a button
+ * asks for one. Signing in with a passkey completes this step without a magic
+ * link.
  */
 public class MagicLinkAuthenticator implements Authenticator {
 
@@ -41,17 +49,45 @@ public class MagicLinkAuthenticator implements Authenticator {
 
   private static final String ATTEMPTED_USERNAME = "ATTEMPTED_USERNAME";
 
+  /** Fields only the passkey form posts (see passkeys.ftl). */
+  private static final List<String> PASSKEY_FORM_FIELDS = List.of("authenticatorData", "error");
+
+  /** Passkey sign-in on the email form; null when there is no session. */
+  private final WebAuthnConditionalUIAuthenticator passkeys;
+
+  public MagicLinkAuthenticator() {
+    this((WebAuthnConditionalUIAuthenticator) null);
+  }
+
+  public MagicLinkAuthenticator(KeycloakSession session) {
+    this(new WebAuthnConditionalUIAuthenticator(session, MagicLinkAuthenticator::emailForm));
+  }
+
+  MagicLinkAuthenticator(WebAuthnConditionalUIAuthenticator passkeys) {
+    this.passkeys = passkeys;
+  }
+
   @Override
   public void authenticate(AuthenticationFlowContext context) {
     logContextInfo("authenticate", context, null);
     // Show email input form
-    Response challenge = context.form().createLoginUsername();
+    Response challenge = emailFormProvider(context).createLoginUsername();
     context.challenge(challenge);
   }
 
   @Override
   public void action(AuthenticationFlowContext context) {
     MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
+
+    if (passkeysEnabled() && PASSKEY_FORM_FIELDS.stream().anyMatch(formData::containsKey)) {
+      // A passkey (or the browser's error getting one) instead of an email
+      // address: WebAuthn verifies it, sets the user and completes the step,
+      // or shows the email form again with the error.
+      logger.infof("Magic Link: Passkey submitted - clientId=%s", safeClientId(context));
+      passkeys.action(context);
+      return;
+    }
+
     String email = formData.getFirst("username");
 
     // Helpful when templates post back (e.g. resend/restart)
@@ -64,7 +100,7 @@ public class MagicLinkAuthenticator implements Authenticator {
 
     if (email == null || email.trim().isEmpty()) {
       context.getEvent().error(Errors.USERNAME_MISSING);
-      Response challenge = context.form()
+      Response challenge = emailFormProvider(context)
           .setError(Messages.MISSING_USERNAME)
           .createLoginUsername();
       context.failureChallenge(AuthenticationFlowError.INVALID_USER, challenge);
@@ -140,7 +176,7 @@ public class MagicLinkAuthenticator implements Authenticator {
       context.getEvent().detail("email_error", e.getMessage());
       org.jboss.logging.Logger.getLogger(getClass()).error("Failed to send magic link email to: " + email, e);
 
-      Response challenge = context.form()
+      Response challenge = emailFormProvider(context)
           .setError("Failed to send email. Please try again.")
           .createLoginUsername();
       context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge);
@@ -149,11 +185,28 @@ public class MagicLinkAuthenticator implements Authenticator {
       org.jboss.logging.Logger.getLogger(getClass()).error("Unexpected error during magic link generation", e);
       context.getEvent().error(Errors.EMAIL_SEND_FAILED);
 
-      Response challenge = context.form()
+      Response challenge = emailFormProvider(context)
           .setError("Failed to send email. Please try again.")
           .createLoginUsername();
       context.failureChallenge(AuthenticationFlowError.INTERNAL_ERROR, challenge);
     }
+  }
+
+  private boolean passkeysEnabled() {
+    return passkeys != null && passkeys.isPasskeysEnabled();
+  }
+
+  /** The email form's provider, with the user's passkeys if they are enabled. */
+  private LoginFormsProvider emailFormProvider(AuthenticationFlowContext context) {
+    if (passkeysEnabled()) {
+      passkeys.fillContextForm(context);
+    }
+    return context.form();
+  }
+
+  /** The email form, for WebAuthn to show again after a passkey error. */
+  private static Response emailForm(AuthenticationFlowContext context) {
+    return context.form().createLoginUsername();
   }
 
   private static String safeClientId(AuthenticationFlowContext context) {

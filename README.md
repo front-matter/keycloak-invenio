@@ -6,7 +6,7 @@ A custom Keycloak Docker image with a Magic Link passwordless authenticator and 
 
 - Based on Keycloak 26.8.2, versioned as `<Keycloak version>.<revision>`, e.g. `26.8.2.0` (see [Versions](#versions))
 - ORCID login via Keycloak's built-in OpenID Connect provider
-- Magic Link passwordless authentication
+- Magic Link passwordless authentication, with optional passkeys
 - Automatic username generation for new users
 - Cloudflare Turnstile bot protection
 - Custom login and email theme `invenio` (plain FreeMarker templates)
@@ -275,6 +275,24 @@ This behaviour applies regardless of whether the user already has an account. Th
 - System checks: Domain `unknown-university.edu` is **not** in allowed list ✗
 - System sends: Notification email to `jane.doe@unknown-university.edu`
 - Login page shows: Normal "Check your email" message (no indication of failure)
+
+### Passkeys
+
+The Magic Link sign-in page can also offer passkeys, as an optional shortcut: users who
+have added one sign in with it directly, without a magic link or ORCID. Everyone else
+signs in as before.
+
+1. Go to **Authentication** → **Policies** → **Webauthn Passwordless Policy** and turn on
+   **Enable Passkeys**
+2. Go to **Authentication** → **Required actions** and enable **Webauthn Register
+   Passwordless**, leaving **Set as default action** off so nobody is asked to add one
+
+Users then add passkeys in the Account Console under **Signing in** → **Passkeys**. On the
+sign-in page, the browser suggests saved passkeys in the email field, and a **Sign in with
+Passkey** button asks for one. A passkey is bound to the Keycloak host name, so it works
+for every application that signs in through this realm.
+
+With passkeys turned off, the page and the flow are unchanged.
 
 ### Testing
 

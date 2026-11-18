@@ -5,8 +5,11 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.authenticators.browser.WebAuthnConditionalUIAuthenticator;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.http.HttpRequest;
@@ -442,5 +445,100 @@ class MagicLinkAuthenticatorTest {
 
         // Must not throw
         assertDoesNotThrow(() -> authenticator.sendDomainNotAllowedEmail(context, "user@restricted.org"));
+    }
+
+    // --- Passkeys on the email form ---
+
+    private WebAuthnConditionalUIAuthenticator passkeys(boolean enabled) {
+        WebAuthnConditionalUIAuthenticator passkeys = mock(WebAuthnConditionalUIAuthenticator.class);
+        lenient().when(passkeys.isPasskeysEnabled()).thenReturn(enabled);
+        return passkeys;
+    }
+
+    private void postForm(MultivaluedMap<String, String> formData) {
+        when(context.getHttpRequest()).thenReturn(httpRequest);
+        when(httpRequest.getDecodedFormParameters()).thenReturn(formData);
+    }
+
+    @Test
+    void testEmailFormOffersPasskeysWhenEnabled() {
+        WebAuthnConditionalUIAuthenticator passkeys = passkeys(true);
+        when(loginFormsProvider.createLoginUsername()).thenReturn(Response.ok().build());
+
+        new MagicLinkAuthenticator(passkeys).authenticate(context);
+
+        verify(passkeys).fillContextForm(context);
+        verify(context).challenge(any(Response.class));
+    }
+
+    @Test
+    void testEmailFormOffersNoPasskeysWhenDisabled() {
+        WebAuthnConditionalUIAuthenticator passkeys = passkeys(false);
+        when(loginFormsProvider.createLoginUsername()).thenReturn(Response.ok().build());
+
+        new MagicLinkAuthenticator(passkeys).authenticate(context);
+
+        verify(passkeys, never()).fillContextForm(any());
+        verify(context).challenge(any(Response.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"authenticatorData", "error"})
+    void testPasskeyFormIsHandedToWebAuthn(String field) {
+        WebAuthnConditionalUIAuthenticator passkeys = passkeys(true);
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle(field, "x");
+        postForm(formData);
+
+        new MagicLinkAuthenticator(passkeys).action(context);
+
+        verify(passkeys).action(context);
+        // No magic link: no user lookup, no email, no other outcome.
+        verify(session, never()).users();
+        verify(session, never()).getProvider(EmailTemplateProvider.class);
+        verify(context, never()).challenge(any());
+        verify(context, never()).failureChallenge(any(), any());
+    }
+
+    @Test
+    void testPasskeyFieldsAreIgnoredWhenPasskeysAreDisabled() {
+        WebAuthnConditionalUIAuthenticator passkeys = passkeys(false);
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle("authenticatorData", "x");
+        postForm(formData);
+        when(loginFormsProvider.createLoginUsername()).thenReturn(Response.ok().build());
+
+        new MagicLinkAuthenticator(passkeys).action(context);
+
+        verify(passkeys, never()).action(any());
+        // Treated as an email form without an email address.
+        verify(context).failureChallenge(any(), any(Response.class));
+    }
+
+    @Test
+    void testEmailFormErrorKeepsOfferingPasskeys() {
+        WebAuthnConditionalUIAuthenticator passkeys = passkeys(true);
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle("username", "");
+        postForm(formData);
+        when(loginFormsProvider.createLoginUsername()).thenReturn(Response.ok().build());
+
+        new MagicLinkAuthenticator(passkeys).action(context);
+
+        verify(passkeys, never()).action(any());
+        verify(passkeys).fillContextForm(context);
+        verify(context).failureChallenge(any(), any(Response.class));
+    }
+
+    @Test
+    void testWithoutASessionThereAreNoPasskeys() {
+        MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+        formData.putSingle("authenticatorData", "x");
+        postForm(formData);
+        when(loginFormsProvider.createLoginUsername()).thenReturn(Response.ok().build());
+
+        new MagicLinkAuthenticator().action(context);
+
+        verify(context).failureChallenge(any(), any(Response.class));
     }
 }
