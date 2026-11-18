@@ -70,3 +70,47 @@
 #kc-form .pf-c-input-group > .pf-c-button.pf-m-control::after {
   border: none;
 }
+
+/*
+ * Card and controls with rounded corners and no coloured edges, as in
+ * InvenioRDM's login page: no blue line on top of the card (login.css draws a
+ * 4px primary-colour border-top), 6px corners on the card, 4px on inputs and
+ * buttons.
+ */
+.login-pf-page .card-pf {
+  border-top: 0;
+  border-radius: 6px;
+}
+
+.login-pf-page .pf-c-button,
+#kc-form .pf-c-form-control {
+  border-radius: 4px;
+}
+
+/*
+ * Identity provider buttons (ORCID): PatternFly's control buttons draw their
+ * border in an ::after layer, with a darker bottom edge that turns blue and
+ * thicker on hover. Use one light grey border on all sides, in every state.
+ */
+.kc-social-item.pf-c-button.pf-m-control::after,
+.kc-social-item.pf-c-button.pf-m-control:hover::after,
+.kc-social-item.pf-c-button.pf-m-control:focus::after,
+.kc-social-item.pf-c-button.pf-m-control:active::after {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.kc-social-item.pf-c-button.pf-m-control:hover,
+.kc-social-item.pf-c-button.pf-m-control:focus {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: var(--pf-global--Color--100);
+}
+
+/*
+ * Cloudflare Turnstile page (the provider's turnstile-form.ftl): its widget is
+ * capped at 400px by an inline style, narrower than the Sign In button below
+ * it. Let the flexible widget fill the form, as the button does.
+ */
+#turnstile-widget {
+  max-width: none !important;
+}
