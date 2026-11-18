@@ -17,9 +17,8 @@
 /* ORCID iD icon on the ORCID sign-in button (kcLogoIdP-orcid). */
 .kc-icon-orcid {
   display: inline-block;
-  width: 1.25em;
-  height: 1.25em;
-  vertical-align: -0.25em;
+  width: 1.75rem;
+  height: 1.75rem;
   background: url("../img/orcid.svg") no-repeat center / contain;
 }
 
@@ -78,7 +77,7 @@
  * buttons.
  */
 .login-pf-page .card-pf {
-  border-top: 0;
+  border: 0;
   border-radius: 6px;
 }
 
@@ -100,6 +99,35 @@
   border-radius: 4px;
 }
 
+/*
+ * Centre the provider name vertically and horizontally; the icon, which
+ * login.css floats left at 23px, is pinned to the left edge and centred too.
+ */
+.kc-social-item.pf-c-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 2.75rem;
+}
+
+.kc-social-item .kc-social-provider-logo {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  float: none;
+  margin: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.kc-social-item .kc-social-icon-text {
+  left: 0;
+}
+
 .kc-social-item.pf-c-button.pf-m-control:hover,
 .kc-social-item.pf-c-button.pf-m-control:focus {
   background-color: rgba(0, 0, 0, 0.03);
@@ -113,4 +141,18 @@
  */
 #turnstile-widget {
   max-width: none !important;
+}
+
+/* Password field and its visibility toggle round only their outer corners. */
+#kc-form .pf-c-input-group > .pf-c-form-control {
+  border-radius: 4px 0 0 4px;
+}
+
+#kc-form .pf-c-input-group > .pf-c-button {
+  border-radius: 0 4px 4px 0;
+}
+
+/* No horizontal rule above "Or sign in with". */
+#kc-social-providers hr {
+  display: none;
 }
